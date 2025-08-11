@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة كراء الشقق اليومية - عرض تجريبي</title>
+    
+    <!-- Bootstrap CSS RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+
+        [data-theme="dark"] {
+            --bs-body-bg: #1a1a1a;
+            --bs-body-color: #ffffff;
+            --bs-card-bg: #2d2d2d;
+            --bs-border-color: #404040;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 76px;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        [data-theme="dark"] .navbar {
+            background-color: #1a1a1a !important;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-border-color);
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-border-color);
+            color: var(--bs-body-color);
+        }
+
+        .auth-section {
+            min-height: calc(100vh - 76px);
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        }
+
+        .auth-section .card {
+            border: none;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] .auth-section .card {
+            background: rgba(45, 45, 45, 0.95);
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, var(--primary-color), var(--info-color));
+            color: white;
+        }
+
+        .apartment-card {
+            height: 100%;
+        }
+
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .calendar th,
+        .calendar td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .calendar th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .calendar .day-available {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: var(--success-color);
+        }
+
+        .calendar .day-booked {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .calendar .day-today {
+            background-color: rgba(255, 193, 7, 0.2);
+            font-weight: bold;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .d-none {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-building"></i>
+                إدارة الشقق
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="bi bi-speedometer2"></i>
+                            لوحة التحكم
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('apartments')">
+                            <i class="bi bi-building"></i>
+                            الشقق
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('bookings')">
+                            <i class="bi bi-calendar-check"></i>
+                            الحجوزات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('statistics')">
+                            <i class="bi bi-bar-chart"></i>
+                            الإحصائيات
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="toggleTheme()" id="themeToggle">
+                            <i class="bi bi-moon"></i>
+                            الوضع الليلي
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span id="userNameNav">مستخدم تجريبي</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="showAuthSection()">تسجيل الخروج</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Section -->
+    <section id="authSection" class="auth-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card">
+                        <div class="card-body p-5">
+                            <!-- Login Form -->
+                            <div id="loginForm">
+                                <div class="text-center mb-4">
+                                    <i class="bi bi-building display-4 text-primary"></i>
+                                    <h2 class="mt-3">تسجيل الدخول</h2>
+                                    <p class="text-muted">أدخل بياناتك للوصول إلى حسابك</p>
+                                </div>
+                                
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="loginEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="loginEmail" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="loginPassword" class="form-label">كلمة المرور</label>
+                                        <input type="password" class="form-control" id="loginPassword" required>
+                                    </div>
+                                    <button type="button" class="btn btn-primary w-100 mb-3" onclick="login()">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                        تسجيل الدخول
+                                    </button>
+                                </form>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">ليس لديك حساب؟ 
+                                        <a href="#" class="text-primary" onclick="showRegisterForm()">إنشاء حساب جديد</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Register Form -->
+                            <div id="registerForm" class="d-none">
+                                <div class="text-center mb-4">
+                                    <i class="bi bi-person-plus display-4 text-primary"></i>
+                                    <h2 class="mt-3">إنشاء حساب جديد</h2>
+                                    <p class="text-muted">أدخل بياناتك لإنشاء حساب جديد</p>
+                                </div>
+                                
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="registerName" class="form-label">الاسم الكامل</label>
+                                        <input type="text" class="form-control" id="registerName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="registerEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="registerEmail" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="registerPassword" class="form-label">كلمة المرور</label>
+                                        <input type="password" class="form-control" id="registerPassword" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                    </div>
+                                    <button type="button" class="btn btn-success w-100 mb-3" onclick="register()">
+                                        <i class="bi bi-person-plus"></i>
+                                        إنشاء الحساب
+                                    </button>
+                                </form>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">لديك حساب بالفعل؟ 
+                                        <a href="#" class="text-primary" onclick="showLoginForm()">تسجيل الدخول</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboardSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title fade-in">
+                        <i class="bi bi-speedometer2"></i>
+                        لوحة التحكم
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-building display-4 mb-3"></i>
+                            <h3>5</h3>
+                            <p class="mb-0">إجمالي الشقق</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-success text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check display-4 mb-3"></i>
+                            <h3>23</h3>
+                            <p class="mb-0">إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-info text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-moon display-4 mb-3"></i>
+                            <h3>156</h3>
+                            <p class="mb-0">إجمالي الليالي</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-warning text-dark text-center">
+                        <div class="card-body">
+                            <i class="bi bi-currency-dollar display-4 mb-3"></i>
+                            <h3>780,000 د.ج</h3>
+                            <p class="mb-0">إجمالي الإيرادات</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities and Upcoming Bookings -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-activity"></i>
+                                الأنشطة الأخيرة
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-item d-flex align-items-center mb-3">
+                                <div class="activity-icon bg-primary text-white rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-building-add"></i>
+                                </div>
+                                <div>
+                                    <div>تم إضافة شقة جديدة: شقة الواحة</div>
+                                    <small class="text-muted">منذ ساعتين</small>
+                                </div>
+                            </div>
+                            <div class="activity-item d-flex align-items-center mb-3">
+                                <div class="activity-icon bg-success text-white rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </div>
+                                <div>
+                                    <div>تم إضافة حجز جديد للشقة: شقة النور</div>
+                                    <small class="text-muted">منذ 4 ساعات</small>
+                                </div>
+                            </div>
+                            <div class="activity-item d-flex align-items-center">
+                                <div class="activity-icon bg-info text-white rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-building-gear"></i>
+                                </div>
+                                <div>
+                                    <div>تم تعديل بيانات الشقة: شقة الأمل</div>
+                                    <small class="text-muted">أمس</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-event"></i>
+                                الحجوزات القادمة
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                                <div>
+                                    <strong>شقة الواحة</strong><br>
+                                    <small class="text-muted">أحمد محمد</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-primary">2024-01-15</div>
+                                    <small class="text-muted">15,000 د.ج</small>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                                <div>
+                                    <strong>شقة النور</strong><br>
+                                    <small class="text-muted">فاطمة علي</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-primary">2024-01-18</div>
+                                    <small class="text-muted">12,000 د.ج</small>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                <div>
+                                    <strong>شقة الأمل</strong><br>
+                                    <small class="text-muted">محمد حسن</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-primary">2024-01-20</div>
+                                    <small class="text-muted">18,000 د.ج</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apartments Section -->
+    <section id="apartmentsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title">
+                            <i class="bi bi-building"></i>
+                            إدارة الشقق
+                        </h1>
+                        <button class="btn btn-primary" onclick="showAlert('سيتم إضافة شقة جديدة')">
+                            <i class="bi bi-plus-circle"></i>
+                            إضافة شقة جديدة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card apartment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">شقة الواحة</h5>
+                            <p class="card-text">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                الجزائر العاصمة - حي السلام
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-currency-dollar text-success"></i>
+                                5,000.00 د.ج / ليلة
+                            </p>
+                            <p class="card-text text-muted">شقة مفروشة بالكامل مع إطلالة رائعة على البحر</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="showAlert('تعديل الشقة')">
+                                    <i class="bi bi-pencil"></i>
+                                    تعديل
+                                </button>
+                                <button class="btn btn-sm btn-outline-info flex-fill" onclick="showSection('bookings')">
+                                    <i class="bi bi-calendar"></i>
+                                    الحجوزات
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger flex-fill" onclick="showAlert('حذف الشقة')">
+                                    <i class="bi bi-trash"></i>
+                                    حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card apartment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">شقة النور</h5>
+                            <p class="card-text">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                وهران - حي المنزه
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-currency-dollar text-success"></i>
+                                4,500.00 د.ج / ليلة
+                            </p>
+                            <p class="card-text text-muted">شقة حديثة قريبة من البحر مع جميع وسائل الراحة</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="showAlert('تعديل الشقة')">
+                                    <i class="bi bi-pencil"></i>
+                                    تعديل
+                                </button>
+                                <button class="btn btn-sm btn-outline-info flex-fill" onclick="showSection('bookings')">
+                                    <i class="bi bi-calendar"></i>
+                                    الحجوزات
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger flex-fill" onclick="showAlert('حذف الشقة')">
+                                    <i class="bi bi-trash"></i>
+                                    حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card apartment-card">
+                        <div class="card-body">
+                            <h5 class="card-title">شقة الأمل</h5>
+                            <p class="card-text">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                قسنطينة - وسط المدينة
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-currency-dollar text-success"></i>
+                                3,800.00 د.ج / ليلة
+                            </p>
+                            <p class="card-text text-muted">شقة واسعة في قلب المدينة مع موقف سيارات</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="showAlert('تعديل الشقة')">
+                                    <i class="bi bi-pencil"></i>
+                                    تعديل
+                                </button>
+                                <button class="btn btn-sm btn-outline-info flex-fill" onclick="showSection('bookings')">
+                                    <i class="bi bi-calendar"></i>
+                                    الحجوزات
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger flex-fill" onclick="showAlert('حذف الشقة')">
+                                    <i class="bi bi-trash"></i>
+                                    حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bookings Section -->
+    <section id="bookingsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title">
+                        <i class="bi bi-calendar-check"></i>
+                        إدارة الحجوزات
+                    </h1>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <select class="form-select">
+                        <option>جميع الشقق</option>
+                        <option>شقة الواحة</option>
+                        <option>شقة النور</option>
+                        <option>شقة الأمل</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="month" class="form-control" value="2024-01">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary" onclick="showAlert('إضافة حجز جديد')">
+                        <i class="bi bi-plus-circle"></i>
+                        إضافة حجز
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">تقويم الحجوزات - يناير 2024</h5>
+                </div>
+                <div class="card-body">
+                    <table class="calendar table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>الأحد</th>
+                                <th>الإثنين</th>
+                                <th>الثلاثاء</th>
+                                <th>الأربعاء</th>
+                                <th>الخميس</th>
+                                <th>الجمعة</th>
+                                <th>السبت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="day-other-month"></td>
+                                <td class="day-available">1<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">2<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">3<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">4<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">5<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">6<br><small class="text-success">متاح</small></td>
+                            </tr>
+                            <tr>
+                                <td class="day-available">7<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">8<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">9<br><small class="text-success">متاح</small></td>
+                                <td class="day-today">10<br><small class="text-warning">اليوم</small></td>
+                                <td class="day-available">11<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">12<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">13<br><small class="text-success">متاح</small></td>
+                            </tr>
+                            <tr>
+                                <td class="day-available">14<br><small class="text-success">متاح</small></td>
+                                <td class="day-booked">15<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">16<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">17<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">18<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-available">19<br><small class="text-success">متاح</small></td>
+                                <td class="day-booked">20<br><small class="text-danger">محجوز</small></td>
+                            </tr>
+                            <tr>
+                                <td class="day-booked">21<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">22<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-available">23<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">24<br><small class="text-success">متاح</small></td>
+                                <td class="day-booked">25<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">26<br><small class="text-danger">محجوز</small></td>
+                                <td class="day-booked">27<br><small class="text-danger">محجوز</small></td>
+                            </tr>
+                            <tr>
+                                <td class="day-available">28<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">29<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">30<br><small class="text-success">متاح</small></td>
+                                <td class="day-available">31<br><small class="text-success">متاح</small></td>
+                                <td class="day-other-month"></td>
+                                <td class="day-other-month"></td>
+                                <td class="day-other-month"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section id="statisticsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title">
+                        <i class="bi bi-bar-chart"></i>
+                        الإحصائيات والتقارير
+                    </h1>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <select class="form-select">
+                        <option>جميع الشقق</option>
+                        <option>شقة الواحة</option>
+                        <option>شقة النور</option>
+                        <option>شقة الأمل</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="month" class="form-control" value="2024-01">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary" onclick="showAlert('تم إنشاء التقرير')">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        إنشاء التقرير
+                    </button>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-primary">5</h3>
+                            <p class="mb-0">إجمالي الشقق</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-success">23</h3>
+                            <p class="mb-0">إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-info">156</h3>
+                            <p class="mb-0">إجمالي الليالي</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-warning">780,000 د.ج</h3>
+                            <p class="mb-0">إجمالي الإيرادات</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">إحصائيات الشقق لشهر يناير 2024</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>اسم الشقة</th>
+                                    <th>الموقع</th>
+                                    <th>السعر اليومي</th>
+                                    <th>عدد الحجوزات</th>
+                                    <th>عدد الليالي</th>
+                                    <th>إجمالي الإيرادات</th>
+                                    <th>متوسط الإشغال</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>شقة الواحة</td>
+                                    <td>الجزائر العاصمة - حي السلام</td>
+                                    <td>5,000.00 د.ج</td>
+                                    <td>8</td>
+                                    <td>56</td>
+                                    <td>280,000 د.ج</td>
+                                    <td>58.1%</td>
+                                </tr>
+                                <tr>
+                                    <td>شقة النور</td>
+                                    <td>وهران - حي المنزه</td>
+                                    <td>4,500.00 د.ج</td>
+                                    <td>9</td>
+                                    <td>63</td>
+                                    <td>283,500 د.ج</td>
+                                    <td>65.6%</td>
+                                </tr>
+                                <tr>
+                                    <td>شقة الأمل</td>
+                                    <td>قسنطينة - وسط المدينة</td>
+                                    <td>3,800.00 د.ج</td>
+                                    <td>6</td>
+                                    <td>37</td>
+                                    <td>140,600 د.ج</td>
+                                    <td>38.5%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Theme management
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            const text = themeToggle.querySelector('span') || themeToggle;
+            
+            if (currentTheme === 'dark') {
+                icon.className = 'bi bi-sun';
+                themeToggle.innerHTML = '<i class="bi bi-sun"></i> الوضع النهاري';
+            } else {
+                icon.className = 'bi bi-moon';
+                themeToggle.innerHTML = '<i class="bi bi-moon"></i> الوضع الليلي';
+            }
+        }
+
+        // Initialize theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') {
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.innerHTML = '<i class="bi bi-sun"></i> الوضع النهاري';
+        }
+
+        // Section management
+        function showSection(sectionName) {
+            // Hide all sections
+            document.getElementById('authSection').classList.add('d-none');
+            document.getElementById('dashboardSection').classList.add('d-none');
+            document.getElementById('apartmentsSection').classList.add('d-none');
+            document.getElementById('bookingsSection').classList.add('d-none');
+            document.getElementById('statisticsSection').classList.add('d-none');
+
+            // Show selected section
+            document.getElementById(sectionName + 'Section').classList.remove('d-none');
+            document.getElementById(sectionName + 'Section').classList.add('fade-in');
+
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            const navLinks = {
+                'dashboard': 'لوحة التحكم',
+                'apartments': 'الشقق',
+                'bookings': 'الحجوزات',
+                'statistics': 'الإحصائيات'
+            };
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.textContent.includes(navLinks[sectionName])) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        function showAuthSection() {
+            document.getElementById('authSection').classList.remove('d-none');
+            document.getElementById('dashboardSection').classList.add('d-none');
+            document.getElementById('apartmentsSection').classList.add('d-none');
+            document.getElementById('bookingsSection').classList.add('d-none');
+            document.getElementById('statisticsSection').classList.add('d-none');
+        }
+
+        // Auth form management
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('d-none');
+            document.getElementById('registerForm').classList.remove('d-none');
+        }
+
+        function showLoginForm() {
+            document.getElementById('registerForm').classList.add('d-none');
+            document.getElementById('loginForm').classList.remove('d-none');
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (email && password) {
+                showAlert('تم تسجيل الدخول بنجاح! (وضع تجريبي)', 'success');
+                setTimeout(() => {
+                    showSection('dashboard');
+                }, 1000);
+            } else {
+                showAlert('يرجى إدخال البريد الإلكتروني وكلمة المرور', 'error');
+            }
+        }
+
+        function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (name && email && password && confirmPassword) {
+                if (password === confirmPassword) {
+                    showAlert('تم إنشاء الحساب بنجاح! (وضع تجريبي)', 'success');
+                    setTimeout(() => {
+                        showLoginForm();
+                    }, 1000);
+                } else {
+                    showAlert('كلمة المرور وتأكيدها غير متطابقتين', 'error');
+                }
+            } else {
+                showAlert('يرجى ملء جميع الحقول', 'error');
+            }
+        }
+
+        // Alert function
+        function showAlert(message, type = 'info') {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 100px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 3000);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('نظام إدارة كراء الشقق اليومية - وضع تجريبي');
+            showAlert('مرحباً بك في النظام التجريبي! جرب جميع الميزات', 'success');
+        });
+    </script>
+</body>
+</html>

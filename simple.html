@@ -440,10 +440,13 @@
                     
                     showMessage(errorMessage, 'error');
                 } else {
-                    showMessage('تم تسجيل الدخول بنجاح!', 'success');
-                    showDashboard(data.user);
-                    window.location.replace('https://apartment-rental-system-w3yg.vercel.app/app.html');
-                }
+                     showMessage('تم تسجيل الدخول بنجاح!', 'success');
+    showDashboard(data.user);
+    
+    // ننتظر 1.5 ثانية لعرض الرسالة ثم إعادة التوجيه
+    setTimeout(() => {
+        window.location.replace('https://apartment-rental-system-w3yg.vercel.app/app.html');
+    }, 1500);      }
             } catch (error) {
                 console.log('Network error:', error);
                 showMessage('خطأ في الاتصال بالخادم. تحقق من اتصال الإنترنت.', 'error');

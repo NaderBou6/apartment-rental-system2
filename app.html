@@ -167,6 +167,78 @@
             background-color: rgba(220, 53, 69, 0.1);
             color: var(--danger-color);
         }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 100%;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        .calendar-day.available {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border-color: #a3cfbb;
+        }
+
+        .calendar-day.booked {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f1aeb5;
+        }
+
+        .calendar-day.past {
+            background-color: #e9ecef;
+            color: #6c757d;
+            border-color: #ced4da;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .calendar-day.header:hover {
+            transform: none;
+        }
+
+        .calendar-day.empty {
+            background-color: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-day {
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -200,6 +272,12 @@
                         <a class="nav-link" href="#" onclick="showSection('bookings')">
                             <i class="bi bi-calendar-check"></i>
                             الحجوزات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('calendar')">
+                            <i class="bi bi-calendar3"></i>
+                            التقويم
                         </a>
                     </li>
                     <li class="nav-item">
@@ -410,7 +488,11 @@
                                     <i class="bi bi-calendar-plus"></i>
                                     إضافة حجز جديد
                                 </button>
-                                <button class="btn btn-info" onclick="showSection('statistics')">
+                                <button class="btn btn-info" onclick="showSection('calendar')">
+                                    <i class="bi bi-calendar3"></i>
+                                    عرض التقويم
+                                </button>
+                                <button class="btn btn-warning" onclick="showSection('statistics')">
                                     <i class="bi bi-bar-chart"></i>
                                     عرض الإحصائيات
                                 </button>
@@ -509,21 +591,187 @@
         <div class="container mt-4">
             <div class="row">
                 <div class="col-12">
-                    <h1 class="page-title fade-in">
-                        <i class="bi bi-bar-chart"></i>
-                        الإحصائيات والتقارير
-                    </h1>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title fade-in">
+                            <i class="bi bi-bar-chart"></i>
+                            الإحصائيات والتقارير
+                        </h1>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="statsMonth" style="width: auto;">
+                                <option value="">كل الوقت</option>
+                                <option value="2024-01">يناير 2024</option>
+                                <option value="2024-02">فبراير 2024</option>
+                                <option value="2024-03">مارس 2024</option>
+                                <option value="2024-04">أبريل 2024</option>
+                                <option value="2024-05">مايو 2024</option>
+                                <option value="2024-06">يونيو 2024</option>
+                                <option value="2024-07">يوليو 2024</option>
+                                <option value="2024-08">أغسطس 2024</option>
+                                <option value="2024-09">سبتمبر 2024</option>
+                                <option value="2024-10">أكتوبر 2024</option>
+                                <option value="2024-11">نوفمبر 2024</option>
+                                <option value="2024-12">ديسمبر 2024</option>
+                                <option value="2025-01">يناير 2025</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadStatistics()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                تحديث
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Statistics Content -->
+            <!-- General Statistics -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-primary text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-building display-4 mb-3"></i>
+                            <h3 id="statsApartments">0</h3>
+                            <p class="mb-0">إجمالي الشقق</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-success text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check display-4 mb-3"></i>
+                            <h3 id="statsBookings">0</h3>
+                            <p class="mb-0">إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-info text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-moon display-4 mb-3"></i>
+                            <h3 id="statsNights">0</h3>
+                            <p class="mb-0">إجمالي الليالي</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-warning text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-cash display-4 mb-3"></i>
+                            <h3 id="statsRevenue">0</h3>
+                            <p class="mb-0">إجمالي المداخيل</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Per Apartment Statistics -->
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-body text-center">
-                            <i class="bi bi-bar-chart display-1 text-muted"></i>
-                            <h3 class="mt-3">الإحصائيات قيد التطوير</h3>
-                            <p class="text-muted">سيتم إضافة الرسوم البيانية والتقارير التفصيلية قريباً</p>
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-building"></i>
+                                إحصائيات الشقق
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم الشقة</th>
+                                            <th>عدد الحجوزات</th>
+                                            <th>عدد الليالي</th>
+                                            <th>إجمالي المداخيل</th>
+                                            <th>متوسط الحجز</th>
+                                            <th>معدل الإشغال</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="apartmentStatsTable">
+                                        <tr>
+                                            <td colspan="6" class="text-center">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">جاري التحميل...</span>
+                                                </div>
+                                                <p class="mt-2">جاري تحميل الإحصائيات...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section id="calendarSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title fade-in">
+                            <i class="bi bi-calendar3"></i>
+                            تقويم الحجوزات
+                        </h1>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="calendarApartment" style="width: auto;">
+                                <option value="">اختر الشقة</option>
+                            </select>
+                            <select class="form-select" id="calendarMonth" style="width: auto;">
+                                <option value="2024-01">يناير 2024</option>
+                                <option value="2024-02">فبراير 2024</option>
+                                <option value="2024-03">مارس 2024</option>
+                                <option value="2024-04">أبريل 2024</option>
+                                <option value="2024-05">مايو 2024</option>
+                                <option value="2024-06">يونيو 2024</option>
+                                <option value="2024-07">يوليو 2024</option>
+                                <option value="2024-08">أغسطس 2024</option>
+                                <option value="2024-09">سبتمبر 2024</option>
+                                <option value="2024-10">أكتوبر 2024</option>
+                                <option value="2024-11">نوفمبر 2024</option>
+                                <option value="2024-12">ديسمبر 2024</option>
+                                <option value="2025-01">يناير 2025</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadCalendar()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                تحديث
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0" id="calendarTitle">
+                                <i class="bi bi-calendar3"></i>
+                                اختر الشقة والشهر لعرض التقويم
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="calendarGrid" class="text-center">
+                                <p class="text-muted">اختر الشقة والشهر لعرض التقويم</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <span class="badge bg-success me-2">🟩</span>
+                                    متاح
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge bg-danger me-2">🟥</span>
+                                    محجوز
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge bg-secondary me-2">⬜</span>
+                                    ماضي
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -561,11 +809,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="apartmentRooms" class="form-label">عدد الغرف</label>
-                                    <select class="form-select" id="apartmentRooms" required>
-                                        <option value="">اختر عدد الغرف</option>
+                                    <label for="apartmentRooms" class="form-label">عدد الغرف (اختياري)</label>
+                                    <select class="form-select" id="apartmentRooms">
+                                        <option value="">غير محدد</option>
                                         <option value="1">غرفة واحدة</option>
-                                        <option value="2">غرفتان</option>
+                                        <option value="2" selected>غرفتان</option>
                                         <option value="3">ثلاث غرف</option>
                                         <option value="4">أربع غرف</option>
                                         <option value="5">خمس غرف أو أكثر</option>
@@ -574,10 +822,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="apartmentBathrooms" class="form-label">عدد الحمامات</label>
-                                    <select class="form-select" id="apartmentBathrooms" required>
-                                        <option value="">اختر عدد الحمامات</option>
-                                        <option value="1">حمام واحد</option>
+                                    <label for="apartmentBathrooms" class="form-label">عدد الحمامات (اختياري)</label>
+                                    <select class="form-select" id="apartmentBathrooms">
+                                        <option value="">غير محدد</option>
+                                        <option value="1" selected>حمام واحد</option>
                                         <option value="2">حمامان</option>
                                         <option value="3">ثلاثة حمامات</option>
                                         <option value="4">أربعة حمامات أو أكثر</option>
@@ -776,6 +1024,12 @@
                     break;
                 case 'bookings':
                     loadBookings();
+                    break;
+                case 'calendar':
+                    loadCalendarApartments();
+                    break;
+                case 'statistics':
+                    loadStatistics();
                     break;
             }
         }
@@ -996,15 +1250,15 @@
                             <div class="card apartment-card">
                                 <div class="card-body">
                                     <h5 class="card-title">${apartment.name}</h5>
-                                    <p class="card-text text-muted">${apartment.address}</p>
+                                    <p class="card-text text-muted">${apartment.location}</p>
                                     <div class="row text-center mb-3">
                                         <div class="col-4">
                                             <i class="bi bi-door-open text-primary"></i>
-                                            <small class="d-block">${apartment.rooms} غرف</small>
+                                            <small class="d-block">${apartment.rooms || 'غير محدد'} غرف</small>
                                         </div>
                                         <div class="col-4">
                                             <i class="bi bi-droplet text-info"></i>
-                                            <small class="d-block">${apartment.bathrooms} حمام</small>
+                                            <small class="d-block">${apartment.bathrooms || 'غير محدد'} حمام</small>
                                         </div>
                                         <div class="col-4">
                                             <i class="bi bi-cash text-success"></i>
@@ -1090,9 +1344,9 @@
                             <td>#${booking.id}</td>
                             <td>${booking.apartments?.name || 'غير محدد'}</td>
                             <td>${booking.guest_name}</td>
-                            <td>${new Date(booking.check_in_date).toLocaleDateString('ar-DZ')}</td>
-                            <td>${new Date(booking.check_out_date).toLocaleDateString('ar-DZ')}</td>
-                            <td>${booking.total_amount} د.ج</td>
+                            <td>${new Date(booking.start_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${new Date(booking.end_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${booking.total_price} د.ج</td>
                             <td>
                                 <span class="booking-status status-${booking.status}">
                                     ${booking.status === 'confirmed' ? 'مؤكد' : 
@@ -1144,13 +1398,18 @@
         async function saveApartment() {
             const apartmentData = {
                 name: document.getElementById('apartmentName').value,
-                address: document.getElementById('apartmentAddress').value,
+                location: document.getElementById('apartmentAddress').value,
                 daily_price: parseFloat(document.getElementById('apartmentPrice').value),
-                rooms: parseInt(document.getElementById('apartmentRooms').value),
-                bathrooms: parseInt(document.getElementById('apartmentBathrooms').value),
                 description: document.getElementById('apartmentDescription').value,
                 user_id: currentUser.id
             };
+
+            // إضافة الحقول الاختيارية فقط إذا كانت موجودة
+            const rooms = document.getElementById('apartmentRooms').value;
+            const bathrooms = document.getElementById('apartmentBathrooms').value;
+            
+            if (rooms) apartmentData.rooms = parseInt(rooms);
+            if (bathrooms) apartmentData.bathrooms = parseInt(bathrooms);
 
             try {
                 const { data, error } = await supabase
@@ -1176,13 +1435,11 @@
                 apartment_id: document.getElementById('bookingApartment').value,
                 guest_name: document.getElementById('guestName').value,
                 guest_phone: document.getElementById('guestPhone').value,
-                guest_email: document.getElementById('guestEmail').value,
-                check_in_date: document.getElementById('checkInDate').value,
-                check_out_date: document.getElementById('checkOutDate').value,
-                total_amount: parseFloat(document.getElementById('totalAmount').value),
+                start_date: document.getElementById('checkInDate').value, // تصحيح: start_date
+                end_date: document.getElementById('checkOutDate').value, // تصحيح: end_date
+                total_price: parseFloat(document.getElementById('totalAmount').value), // تصحيح: total_price
                 status: document.getElementById('bookingStatus').value,
-                notes: document.getElementById('bookingNotes').value,
-                user_id: currentUser.id
+                created_by: currentUser.id // تصحيح: created_by بدلاً من user_id
             };
 
             try {
@@ -1264,8 +1521,293 @@
             }
         });
 
+        // Load statistics
+        async function loadStatistics() {
+            const selectedMonth = document.getElementById('statsMonth').value;
+            
+            try {
+                // Load general statistics
+                const { data: apartmentsData, error: apartmentsError } = await supabase
+                    .from('apartments')
+                    .select('*');
+
+                if (!apartmentsError) {
+                    document.getElementById('statsApartments').textContent = apartmentsData?.length || 0;
+                }
+
+                // Load bookings with date filter
+                let bookingsQuery = supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        apartments (
+                            name
+                        )
+                    `)
+                    .neq('status', 'cancelled');
+
+                if (selectedMonth) {
+                    const startDate = selectedMonth + '-01';
+                    const endDate = selectedMonth + '-31';
+                    bookingsQuery = bookingsQuery
+                        .gte('start_date', startDate)
+                        .lte('start_date', endDate);
+                }
+
+                const { data: bookingsData, error: bookingsError } = await bookingsQuery;
+
+                if (!bookingsError && bookingsData) {
+                    document.getElementById('statsBookings').textContent = bookingsData.length;
+                    
+                    // Calculate total nights and revenue
+                    let totalNights = 0;
+                    let totalRevenue = 0;
+                    
+                    bookingsData.forEach(booking => {
+                        const nights = Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 60 * 60 * 24));
+                        totalNights += nights;
+                        totalRevenue += parseFloat(booking.total_price || 0);
+                    });
+                    
+                    document.getElementById('statsNights').textContent = totalNights;
+                    document.getElementById('statsRevenue').textContent = totalRevenue.toLocaleString() + ' د.ج';
+                }
+
+                // Load per-apartment statistics
+                await loadApartmentStatistics(selectedMonth);
+
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Load apartment statistics
+        async function loadApartmentStatistics(selectedMonth) {
+            const apartmentStatsTable = document.getElementById('apartmentStatsTable');
+            
+            try {
+                const { data: apartments, error: apartmentsError } = await supabase
+                    .from('apartments')
+                    .select('*');
+
+                if (apartmentsError || !apartments) {
+                    apartmentStatsTable.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                خطأ في تحميل بيانات الشقق
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const statsRows = await Promise.all(apartments.map(async (apartment) => {
+                    let bookingsQuery = supabase
+                        .from('bookings')
+                        .select('*')
+                        .eq('apartment_id', apartment.id)
+                        .neq('status', 'cancelled');
+
+                    if (selectedMonth) {
+                        const startDate = selectedMonth + '-01';
+                        const endDate = selectedMonth + '-31';
+                        bookingsQuery = bookingsQuery
+                            .gte('start_date', startDate)
+                            .lte('start_date', endDate);
+                    }
+
+                    const { data: bookings } = await bookingsQuery;
+                    
+                    let totalBookings = bookings?.length || 0;
+                    let totalNights = 0;
+                    let totalRevenue = 0;
+                    
+                    if (bookings) {
+                        bookings.forEach(booking => {
+                            const nights = Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 60 * 60 * 24));
+                            totalNights += nights;
+                            totalRevenue += parseFloat(booking.total_price || 0);
+                        });
+                    }
+                    
+                    const averageBooking = totalBookings > 0 ? (totalRevenue / totalBookings) : 0;
+                    const occupancyRate = selectedMonth ? calculateOccupancyRate(selectedMonth, totalNights) : 'غير محدد';
+                    
+                    return `
+                        <tr>
+                            <td>${apartment.name}</td>
+                            <td>${totalBookings}</td>
+                            <td>${totalNights}</td>
+                            <td>${totalRevenue.toLocaleString()} د.ج</td>
+                            <td>${averageBooking.toLocaleString()} د.ج</td>
+                            <td>${occupancyRate}</td>
+                        </tr>
+                    `;
+                }));
+
+                apartmentStatsTable.innerHTML = statsRows.join('');
+
+            } catch (error) {
+                apartmentStatsTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            خطأ في تحميل الإحصائيات: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Calculate occupancy rate
+        function calculateOccupancyRate(month, bookedNights) {
+            const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+            const occupancyRate = (bookedNights / daysInMonth) * 100;
+            return occupancyRate.toFixed(1) + '%';
+        }
+
+        // Load calendar apartments
+        async function loadCalendarApartments() {
+            const apartmentSelect = document.getElementById('calendarApartment');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('apartments')
+                    .select('id, name');
+
+                if (!error && data) {
+                    apartmentSelect.innerHTML = '<option value="">اختر الشقة</option>' +
+                        data.map(apt => `<option value="${apt.id}">${apt.name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading apartments for calendar:', error);
+            }
+        }
+
+        // Load calendar
+        async function loadCalendar() {
+            const apartmentId = document.getElementById('calendarApartment').value;
+            const selectedMonth = document.getElementById('calendarMonth').value;
+            const calendarGrid = document.getElementById('calendarGrid');
+            const calendarTitle = document.getElementById('calendarTitle');
+            
+            if (!apartmentId || !selectedMonth) {
+                calendarGrid.innerHTML = '<p class="text-muted">اختر الشقة والشهر لعرض التقويم</p>';
+                return;
+            }
+
+            try {
+                // Get apartment name
+                const { data: apartment } = await supabase
+                    .from('apartments')
+                    .select('name')
+                    .eq('id', apartmentId)
+                    .single();
+
+                // Get bookings for the month
+                const startDate = selectedMonth + '-01';
+                const endDate = selectedMonth + '-31';
+                
+                const { data: bookings } = await supabase
+                    .from('bookings')
+                    .select('start_date, end_date')
+                    .eq('apartment_id', apartmentId)
+                    .neq('status', 'cancelled')
+                    .gte('start_date', startDate)
+                    .lte('end_date', endDate);
+
+                // Generate calendar
+                const calendar = generateCalendar(selectedMonth, bookings || []);
+                calendarGrid.innerHTML = calendar;
+                calendarTitle.innerHTML = `
+                    <i class="bi bi-calendar3"></i>
+                    ${apartment?.name || 'شقة'} - ${getMonthName(selectedMonth)}
+                `;
+
+            } catch (error) {
+                calendarGrid.innerHTML = `<p class="text-danger">خطأ في تحميل التقويم: ${error.message}</p>`;
+            }
+        }
+
+        // Generate calendar HTML
+        function generateCalendar(month, bookings) {
+            const [year, monthNum] = month.split('-');
+            const firstDay = new Date(year, monthNum - 1, 1);
+            const lastDay = new Date(year, monthNum, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Create booked dates set
+            const bookedDates = new Set();
+            bookings.forEach(booking => {
+                const start = new Date(booking.start_date);
+                const end = new Date(booking.end_date);
+                
+                for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+                    if (d.getMonth() === firstDay.getMonth()) {
+                        bookedDates.add(d.getDate());
+                    }
+                }
+            });
+
+            let html = '<div class="calendar-grid">';
+            
+            // Add day headers
+            const dayHeaders = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            dayHeaders.forEach(day => {
+                html += `<div class="calendar-day header">${day}</div>`;
+            });
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
+            
+            // Add days of the month
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, monthNum - 1, day);
+                const isPast = currentDate < today;
+                const isBooked = bookedDates.has(day);
+                
+                let className = 'calendar-day';
+                if (isPast) {
+                    className += ' past';
+                } else if (isBooked) {
+                    className += ' booked';
+                } else {
+                    className += ' available';
+                }
+                
+                html += `<div class="${className}">${day}</div>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Get month name in Arabic
+        function getMonthName(month) {
+            const monthNames = {
+                '01': 'يناير', '02': 'فبراير', '03': 'مارس', '04': 'أبريل',
+                '05': 'مايو', '06': 'يونيو', '07': 'يوليو', '08': 'أغسطس',
+                '09': 'سبتمبر', '10': 'أكتوبر', '11': 'نوفمبر', '12': 'ديسمبر'
+            };
+            const [year, monthNum] = month.split('-');
+            return `${monthNames[monthNum]} ${year}`;
+        }
+
+        // Event listeners for calendar and statistics
+        document.getElementById('calendarApartment').addEventListener('change', loadCalendar);
+        document.getElementById('calendarMonth').addEventListener('change', loadCalendar);
+        document.getElementById('statsMonth').addEventListener('change', loadStatistics);
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Set current month as default
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            document.getElementById('calendarMonth').value = currentMonth;
+            document.getElementById('statsMonth').value = currentMonth;
+            
             console.log('تطبيق إدارة الشقق جاهز للعمل!');
         });
     </script>

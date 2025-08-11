@@ -1052,6 +1052,9 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
+            // Show loading message
+            showMessage('جاري تسجيل الدخول...', 'info');
+
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -1059,70 +1062,36 @@
                 });
 
                 if (error) {
-                    showMessage('خطأ في تسجيل الدخول: ' + error.message, 'error');
-                } else {
-                    showMessage('تم تسجيل الدخول بنجاح!', 'success');
-                    showDashboard(data.user);
-                }
-            } catch (error) {
-                showMessage('خطأ في الاتصال: ' + error.message, 'error');
-            }
-        });
-
-        // Register
-        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (password !== confirmPassword) {
-                showMessage('كلمات المرور غير متطابقة', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: name
-                        }
+                    console.log('Login error:', error);
+                    
+                    // Handle specific error messages
+                    let errorMessage = 'خطأ في تسجيل الدخول: ';
+                    
+                    if (error.message.includes('Invalid login')) {
+                        errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة. تأكد من:';
+                        errorMessage += '<br>• صحة البريد الإلكتروني';
+                        errorMessage += '<br>• صحة كلمة المرور';
+                        errorMessage += '<br>• تأكيد البريد الإلكتروني (تحقق من بريدك)';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        errorMessage = 'يجب تأكيد البريد الإلكتروني أولاً. تحقق من بريدك الإلكتروني واضغط على رابط التأكيد.';
+                    } else {
+                        errorMessage += error.message;
                     }
-                });
-
-                if (error) {
-                    showMessage('خطأ في إنشاء الحساب: ' + error.message, 'error');
+                    
+                    showMessage(errorMessage, 'error');
                 } else {
-                    showMessage('تم إنشاء الحساب بنجاح!', 'success');
-                    setTimeout(() => {
-                        showLoginForm();
-                    }, 2000);
-                }
+                     showMessage('تم تسجيل الدخول بنجاح!', 'success');
+    showDashboard(data.user);
+    
+    // ننتظر 1.5 ثانية لعرض الرسالة ثم إعادة التوجيه
+    setTimeout(() => {
+        window.location.replace('https://apartment-rental-system-w3yg.vercel.app/app.html');
+    }, 1500);      }
             } catch (error) {
-                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+                console.log('Network error:', error);
+                showMessage('خطأ في الاتصال بالخادم. تحقق من اتصال الإنترنت.', 'error');
             }
         });
-
-        // Show dashboard
-        function showDashboard(user) {
-            currentUser = user;
-            authSection.classList.add('d-none');
-            dashboardSection.classList.remove('d-none');
-            mainNavigation.style.display = 'flex';
-            userDropdown.style.display = 'block';
-            userNameNav.textContent = user.user_metadata?.full_name || user.email;
-            
-            loadDashboardData();
-        }
 
         // Logout
         function logout() {

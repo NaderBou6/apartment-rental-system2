@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة كراء الشقق اليومية</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .text-primary {
+            color: #667eea !important;
+        }
+        
+        .dashboard-section {
+            display: none;
+            padding: 20px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="authSection" class="auth-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="auth-card p-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-building text-primary" style="font-size: 3rem;"></i>
+                            <h2 class="mt-3 text-primary">نظام إدارة الشقق</h2>
+                            <p class="text-muted">إدارة عصرية لكراء الشقق اليومية</p>
+                        </div>
+
+                        <!-- Login Form -->
+                        <div id="loginForm">
+                            <h4 class="text-center mb-4">تسجيل الدخول</h4>
+                            <form id="loginFormElement">
+                                <div class="mb-3">
+                                    <label for="loginEmail" class="form-label">البريد الإلكتروني</label>
+                                    <input type="email" class="form-control" id="loginEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="loginPassword" class="form-label">كلمة المرور</label>
+                                    <input type="password" class="form-control" id="loginPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    دخول
+                                </button>
+                            </form>
+                            <div class="text-center">
+                                <p class="mb-0">ليس لديك حساب؟ 
+                                    <a href="#" id="showRegister" class="text-primary text-decoration-none">إنشاء حساب جديد</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div id="registerForm" style="display: none;">
+                            <h4 class="text-center mb-4">إنشاء حساب جديد</h4>
+                            <form id="registerFormElement">
+                                <div class="mb-3">
+                                    <label for="registerName" class="form-label">الاسم الكامل</label>
+                                    <input type="text" class="form-control" id="registerName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerEmail" class="form-label">البريد الإلكتروني</label>
+                                    <input type="email" class="form-control" id="registerEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerPassword" class="form-label">كلمة المرور</label>
+                                    <input type="password" class="form-control" id="registerPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    إنشاء حساب
+                                </button>
+                            </form>
+                            <div class="text-center">
+                                <p class="mb-0">لديك حساب بالفعل؟ 
+                                    <a href="#" id="showLogin" class="text-primary text-decoration-none">تسجيل الدخول</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Messages -->
+                        <div id="messageContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="dashboard-section">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-building"></i>
+                    إدارة الشقق
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text me-3" id="userNameNav">مرحباً</span>
+                    <button class="btn btn-outline-light btn-sm" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i>
+                        خروج
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5><i class="bi bi-building"></i> إجمالي الشقق</h5>
+                        <h2 id="totalApartments">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5><i class="bi bi-calendar-check"></i> الحجوزات النشطة</h5>
+                        <h2 id="activeBookings">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h5><i class="bi bi-cash"></i> الإيرادات الشهرية</h5>
+                        <h2 id="monthlyRevenue">0 د.ج</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>مرحباً بك في نظام إدارة الشقق!</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>تم تسجيل دخولك بنجاح. يمكنك الآن البدء في إدارة شققك وحجوزاتك.</p>
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i>
+                                النظام يعمل بشكل صحيح! يمكنك الآن إضافة الميزات الإضافية.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'https://zokmbrvhyhxtwhdfrnwt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpva21icnZoeWh4dHdoZGZybnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NjY1NDQsImV4cCI6MjA3MDQ0MjU0NH0.UVcH2B2qjJelVUkG9DnaCFcrPb7MMepHMY0zu34l1kU';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const messageContainer = document.getElementById('messageContainer');
+        const userNameNav = document.getElementById('userNameNav');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Show message function
+        function showMessage(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-danger' : 
+                              type === 'success' ? 'alert-success' : 'alert-info';
+            
+            messageContainer.innerHTML = `
+                <div class="alert ${alertClass} mt-3" role="alert">
+                    <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : 
+                                     type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Toggle forms
+        showRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // Register form
+        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showMessage('كلمات المرور غير متطابقة', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name
+                        }
+                    }
+                });
+
+                if (error) {
+                    showMessage('خطأ في إنشاء الحساب: ' + error.message, 'error');
+                } else {
+                    showMessage('تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني لتأكيد الحساب.', 'success');
+                    // Switch to login form
+                    setTimeout(() => {
+                        registerForm.style.display = 'none';
+                        loginForm.style.display = 'block';
+                    }, 2000);
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        });
+
+        // Login form
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    showMessage('خطأ في تسجيل الدخول: ' + error.message, 'error');
+                } else {
+                    showMessage('تم تسجيل الدخول بنجاح!', 'success');
+                    showDashboard(data.user);
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        });
+
+        // Show dashboard
+        function showDashboard(user) {
+            authSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            userNameNav.textContent = `مرحباً ${user.user_metadata?.full_name || user.email}`;
+        }
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            const { error } = await supabase.auth.signOut();
+            if (!error) {
+                authSection.style.display = 'block';
+                dashboardSection.style.display = 'none';
+                showMessage('تم تسجيل الخروج بنجاح', 'success');
+            }
+        });
+
+        // Check if user is already logged in
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                showDashboard(session.user);
+            } else {
+                authSection.style.display = 'block';
+                dashboardSection.style.display = 'none';
+            }
+        });
+
+        console.log('التطبيق جاهز للعمل!');
+    </script>
+</body>
+</html>

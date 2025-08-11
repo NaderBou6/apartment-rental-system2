@@ -115,6 +115,17 @@
                                 </button>
                             </form>
                             <div class="text-center">
+                                <div class="alert alert-info small mb-3">
+                                    <strong>للاختبار السريع:</strong><br>
+                                    البريد: demo@test.com<br>
+                                    كلمة المرور: 123456789<br>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="fillDemo">
+                                        ملء البيانات التجريبية
+                                    </button>
+                                </div>
+                                <p class="mb-2">
+                                    <a href="#" id="resetPassword" class="text-muted text-decoration-none small">نسيت كلمة المرور؟</a>
+                                </p>
                                 <p class="mb-0">ليس لديك حساب؟ 
                                     <a href="#" id="showRegister" class="text-primary text-decoration-none">إنشاء حساب جديد</a>
                                 </p>
@@ -132,6 +143,14 @@
                                 <div class="mb-3">
                                     <label for="registerEmail" class="form-label">البريد الإلكتروني</label>
                                     <input type="email" class="form-control" id="registerEmail" required>
+                                    <div class="form-text">
+                                        <small>
+                                            اقتراحات: 
+                                            <a href="#" onclick="document.getElementById('registerEmail').value='test' + Math.floor(Math.random()*1000) + '@gmail.com'">بريد عشوائي</a>
+                                            |
+                                            <a href="#" onclick="document.getElementById('registerEmail').value='user' + Date.now() + '@test.com'">بريد تجريبي</a>
+                                        </small>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="registerPassword" class="form-label">كلمة المرور</label>
@@ -272,6 +291,52 @@
             loginForm.style.display = 'block';
         });
 
+        // Reset password
+        document.getElementById('resetPassword').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            
+            if (!email) {
+                showMessage('أدخل بريدك الإلكتروني أولاً ثم اضغط على "نسيت كلمة المرور"', 'error');
+                return;
+            }
+
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email);
+                if (error) {
+                    showMessage('خطأ في إرسال رابط إعادة التعيين: ' + error.message, 'error');
+                } else {
+                    showMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني', 'success');
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال', 'error');
+            }
+        });
+
+        // Fill demo data
+        document.getElementById('fillDemo').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginEmail').value = 'demo@test.com';
+            document.getElementById('loginPassword').value = '123456789';
+            showMessage('تم ملء البيانات التجريبية. اضغط "دخول" للمتابعة.', 'info');
+        });
+
+        // Countdown function
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            if (!countdownElement) return;
+            
+            const timer = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    showMessage('يمكنك الآن المحاولة مرة أخرى!', 'success');
+                }
+            }, 1000);
+        }
+
         // Register form
         document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -303,14 +368,37 @@
                 });
 
                 if (error) {
-                    showMessage('خطأ في إنشاء الحساب: ' + error.message, 'error');
+                    console.log('Register error:', error);
+                    
+                    let errorMessage = 'خطأ في إنشاء الحساب: ';
+                    
+                    if (error.message.includes('you can only request this after')) {
+                        const seconds = error.message.match(/\d+/)?.[0] || '60';
+                        errorMessage = `لأسباب أمنية، يجب الانتظار ${seconds} ثانية قبل المحاولة مرة أخرى.`;
+                        errorMessage += '<br><br><strong>الحلول السريعة:</strong>';
+                        errorMessage += '<br>• استخدم بريد إلكتروني مختلف (الأسرع)';
+                        errorMessage += '<br>• أو انتظر <span id="countdown">' + seconds + '</span> ثانية';
+                        errorMessage += '<br>• أو أعد تحميل الصفحة';
+                        
+                        // Start countdown
+                        showMessage(errorMessage, 'error');
+                        startCountdown(parseInt(seconds));
+                        return;
+                    } else if (error.message.includes('User already registered')) {
+                        errorMessage = 'هذا البريد الإلكتروني مسجل بالفعل. ';
+                        errorMessage += '<a href="#" onclick="document.getElementById(\'registerForm\').style.display=\'none\'; document.getElementById(\'loginForm\').style.display=\'block\';">سجل دخول بدلاً من ذلك</a>';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    showMessage(errorMessage, 'error');
                 } else {
                     showMessage('تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني لتأكيد الحساب.', 'success');
                     // Switch to login form
                     setTimeout(() => {
                         registerForm.style.display = 'none';
                         loginForm.style.display = 'block';
-                    }, 2000);
+                    }, 3000);
                 }
             } catch (error) {
                 showMessage('خطأ في الاتصال: ' + error.message, 'error');
@@ -324,6 +412,9 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
+            // Show loading message
+            showMessage('جاري تسجيل الدخول...', 'info');
+
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -331,13 +422,31 @@
                 });
 
                 if (error) {
-                    showMessage('خطأ في تسجيل الدخول: ' + error.message, 'error');
+                    console.log('Login error:', error);
+                    
+                    // Handle specific error messages
+                    let errorMessage = 'خطأ في تسجيل الدخول: ';
+                    
+                    if (error.message.includes('Invalid login')) {
+                        errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة. تأكد من:';
+                        errorMessage += '<br>• صحة البريد الإلكتروني';
+                        errorMessage += '<br>• صحة كلمة المرور';
+                        errorMessage += '<br>• تأكيد البريد الإلكتروني (تحقق من بريدك)';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        errorMessage = 'يجب تأكيد البريد الإلكتروني أولاً. تحقق من بريدك الإلكتروني واضغط على رابط التأكيد.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    showMessage(errorMessage, 'error');
                 } else {
                     showMessage('تم تسجيل الدخول بنجاح!', 'success');
                     showDashboard(data.user);
+                    window.location.replace('https://apartment-rental-system-w3yg.vercel.app/app.html');
                 }
             } catch (error) {
-                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+                console.log('Network error:', error);
+                showMessage('خطأ في الاتصال بالخادم. تحقق من اتصال الإنترنت.', 'error');
             }
         });
 

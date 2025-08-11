@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة كراء الشقق اليومية</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+
+        [data-theme="dark"] {
+            --bs-body-bg: #1a1a1a;
+            --bs-body-color: #ffffff;
+            --bs-card-bg: #2d2d2d;
+            --bs-border-color: #404040;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 76px;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        [data-theme="dark"] .navbar {
+            background-color: #1a1a1a !important;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-border-color);
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-border-color);
+            color: var(--bs-body-color);
+        }
+
+        .auth-section {
+            min-height: calc(100vh - 76px);
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        }
+
+        .auth-section .card {
+            border: none;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] .auth-section .card {
+            background: rgba(45, 45, 45, 0.95);
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, var(--primary-color), var(--info-color));
+            color: white;
+        }
+
+        .apartment-card {
+            height: 100%;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .modal-content {
+            border-radius: 1rem;
+        }
+
+        .form-floating > label {
+            right: 1rem;
+            left: auto;
+        }
+
+        .apartment-image {
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .booking-status {
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+        }
+
+        .status-confirmed {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-building"></i>
+                إدارة الشقق
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto" id="mainNavigation" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="bi bi-speedometer2"></i>
+                            لوحة التحكم
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('apartments')">
+                            <i class="bi bi-building"></i>
+                            الشقق
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('bookings')">
+                            <i class="bi bi-calendar-check"></i>
+                            الحجوزات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('statistics')">
+                            <i class="bi bi-bar-chart"></i>
+                            الإحصائيات
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="toggleTheme()" id="themeToggle">
+                            <i class="bi bi-moon"></i>
+                            الوضع الليلي
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown" id="userDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span id="userNameNav">مستخدم</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">تسجيل الخروج</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Section -->
+    <section id="authSection" class="auth-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card">
+                        <div class="card-body p-5">
+                            <!-- Login Form -->
+                            <div id="loginForm">
+                                <div class="text-center mb-4">
+                                    <i class="bi bi-building display-4 text-primary"></i>
+                                    <h2 class="mt-3">تسجيل الدخول</h2>
+                                    <p class="text-muted">أدخل بياناتك للوصول إلى حسابك</p>
+                                </div>
+                                
+                                <form id="loginFormElement">
+                                    <div class="mb-3">
+                                        <label for="loginEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="loginEmail" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="loginPassword" class="form-label">كلمة المرور</label>
+                                        <input type="password" class="form-control" id="loginPassword" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                        تسجيل الدخول
+                                    </button>
+                                </form>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">ليس لديك حساب؟ 
+                                        <a href="#" class="text-primary" onclick="showRegisterForm()">إنشاء حساب جديد</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Register Form -->
+                            <div id="registerForm" class="d-none">
+                                <div class="text-center mb-4">
+                                    <i class="bi bi-person-plus display-4 text-primary"></i>
+                                    <h2 class="mt-3">إنشاء حساب جديد</h2>
+                                    <p class="text-muted">أدخل بياناتك لإنشاء حساب جديد</p>
+                                </div>
+                                
+                                <form id="registerFormElement">
+                                    <div class="mb-3">
+                                        <label for="registerName" class="form-label">الاسم الكامل</label>
+                                        <input type="text" class="form-control" id="registerName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="registerEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="registerEmail" required>
+                                        <div class="form-text">
+                                            <small>
+                                                <a href="#" onclick="document.getElementById('registerEmail').value='test' + Math.floor(Math.random()*1000) + '@gmail.com'">بريد عشوائي</a>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="registerPassword" class="form-label">كلمة المرور</label>
+                                        <input type="password" class="form-control" id="registerPassword" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 mb-3">
+                                        <i class="bi bi-person-plus"></i>
+                                        إنشاء الحساب
+                                    </button>
+                                </form>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">لديك حساب بالفعل؟ 
+                                        <a href="#" class="text-primary" onclick="showLoginForm()">تسجيل الدخول</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Messages -->
+                            <div id="messageContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboardSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title fade-in">
+                        <i class="bi bi-speedometer2"></i>
+                        لوحة التحكم
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-building display-4 mb-3"></i>
+                            <h3 id="totalApartments">0</h3>
+                            <p class="mb-0">إجمالي الشقق</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-success text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check display-4 mb-3"></i>
+                            <h3 id="totalBookings">0</h3>
+                            <p class="mb-0">إجمالي الحجوزات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-info text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-event display-4 mb-3"></i>
+                            <h3 id="activeBookings">0</h3>
+                            <p class="mb-0">الحجوزات النشطة</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-warning text-white text-center">
+                        <div class="card-body">
+                            <i class="bi bi-cash display-4 mb-3"></i>
+                            <h3 id="monthlyRevenue">0</h3>
+                            <p class="mb-0">الإيرادات الشهرية</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clock-history"></i>
+                                الأنشطة الحديثة
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentActivities">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    جاري تحميل الأنشطة...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-speedometer2"></i>
+                                إجراءات سريعة
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="showSection('apartments')">
+                                    <i class="bi bi-plus-circle"></i>
+                                    إضافة شقة جديدة
+                                </button>
+                                <button class="btn btn-success" onclick="showSection('bookings')">
+                                    <i class="bi bi-calendar-plus"></i>
+                                    إضافة حجز جديد
+                                </button>
+                                <button class="btn btn-info" onclick="showSection('statistics')">
+                                    <i class="bi bi-bar-chart"></i>
+                                    عرض الإحصائيات
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apartments Section -->
+    <section id="apartmentsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title fade-in">
+                            <i class="bi bi-building"></i>
+                            إدارة الشقق
+                        </h1>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#apartmentModal">
+                            <i class="bi bi-plus-circle"></i>
+                            إضافة شقة جديدة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apartments Grid -->
+            <div class="row" id="apartmentsGrid">
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                    <p class="mt-2">جاري تحميل الشقق...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bookings Section -->
+    <section id="bookingsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title fade-in">
+                            <i class="bi bi-calendar-check"></i>
+                            إدارة الحجوزات
+                        </h1>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                            <i class="bi bi-plus-circle"></i>
+                            إضافة حجز جديد
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الحجز</th>
+                                    <th>الشقة</th>
+                                    <th>النزيل</th>
+                                    <th>تاريخ الدخول</th>
+                                    <th>تاريخ الخروج</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTable">
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                        <p class="mt-2">جاري تحميل الحجوزات...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section id="statisticsSection" class="d-none">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title fade-in">
+                        <i class="bi bi-bar-chart"></i>
+                        الإحصائيات والتقارير
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Statistics Content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-bar-chart display-1 text-muted"></i>
+                            <h3 class="mt-3">الإحصائيات قيد التطوير</h3>
+                            <p class="text-muted">سيتم إضافة الرسوم البيانية والتقارير التفصيلية قريباً</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apartment Modal -->
+    <div class="modal fade" id="apartmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-building"></i>
+                        إضافة شقة جديدة
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="apartmentForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="apartmentName" class="form-label">اسم الشقة</label>
+                                    <input type="text" class="form-control" id="apartmentName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="apartmentPrice" class="form-label">السعر اليومي (د.ج)</label>
+                                    <input type="number" class="form-control" id="apartmentPrice" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="apartmentRooms" class="form-label">عدد الغرف</label>
+                                    <select class="form-select" id="apartmentRooms" required>
+                                        <option value="">اختر عدد الغرف</option>
+                                        <option value="1">غرفة واحدة</option>
+                                        <option value="2">غرفتان</option>
+                                        <option value="3">ثلاث غرف</option>
+                                        <option value="4">أربع غرف</option>
+                                        <option value="5">خمس غرف أو أكثر</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="apartmentBathrooms" class="form-label">عدد الحمامات</label>
+                                    <select class="form-select" id="apartmentBathrooms" required>
+                                        <option value="">اختر عدد الحمامات</option>
+                                        <option value="1">حمام واحد</option>
+                                        <option value="2">حمامان</option>
+                                        <option value="3">ثلاثة حمامات</option>
+                                        <option value="4">أربعة حمامات أو أكثر</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apartmentAddress" class="form-label">العنوان</label>
+                            <textarea class="form-control" id="apartmentAddress" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apartmentDescription" class="form-label">الوصف</label>
+                            <textarea class="form-control" id="apartmentDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveApartment()">
+                        <i class="bi bi-save"></i>
+                        حفظ الشقة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-plus"></i>
+                        إضافة حجز جديد
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bookingApartment" class="form-label">الشقة</label>
+                                    <select class="form-select" id="bookingApartment" required>
+                                        <option value="">اختر الشقة</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="guestName" class="form-label">اسم النزيل</label>
+                                    <input type="text" class="form-control" id="guestName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="guestPhone" class="form-label">رقم الهاتف</label>
+                                    <input type="tel" class="form-control" id="guestPhone" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="guestEmail" class="form-label">البريد الإلكتروني</label>
+                                    <input type="email" class="form-control" id="guestEmail">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="checkInDate" class="form-label">تاريخ الدخول</label>
+                                    <input type="date" class="form-control" id="checkInDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="checkOutDate" class="form-label">تاريخ الخروج</label>
+                                    <input type="date" class="form-control" id="checkOutDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="totalAmount" class="form-label">المبلغ الإجمالي (د.ج)</label>
+                                    <input type="number" class="form-control" id="totalAmount" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bookingStatus" class="form-label">حالة الحجز</label>
+                                    <select class="form-select" id="bookingStatus" required>
+                                        <option value="confirmed">مؤكد</option>
+                                        <option value="pending">في الانتظار</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookingNotes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="bookingNotes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-success" onclick="saveBooking()">
+                        <i class="bi bi-save"></i>
+                        حفظ الحجز
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'https://zokmbrvhyhxtwhdfrnwt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpva21icnZoeWh4dHdoZGZybnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NjY1NDQsImV4cCI6MjA3MDQ0MjU0NH0.UVcH2B2qjJelVUkG9DnaCFcrPb7MMepHMY0zu34l1kU';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Global variables
+        let currentUser = null;
+        let apartments = [];
+        let bookings = [];
+
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const apartmentsSection = document.getElementById('apartmentsSection');
+        const bookingsSection = document.getElementById('bookingsSection');
+        const statisticsSection = document.getElementById('statisticsSection');
+        const messageContainer = document.getElementById('messageContainer');
+        const mainNavigation = document.getElementById('mainNavigation');
+        const userDropdown = document.getElementById('userDropdown');
+        const userNameNav = document.getElementById('userNameNav');
+
+        // Show message function
+        function showMessage(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-danger' : 
+                              type === 'success' ? 'alert-success' : 
+                              type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            messageContainer.innerHTML = `
+                <div class="alert ${alertClass} mt-3" role="alert">
+                    <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : 
+                                     type === 'success' ? 'check-circle' : 
+                                     type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Show/Hide sections
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('d-none');
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + 'Section');
+            if (targetSection) {
+                targetSection.classList.remove('d-none');
+            }
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            // Load section data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'apartments':
+                    loadApartments();
+                    break;
+                case 'bookings':
+                    loadBookings();
+                    break;
+            }
+        }
+
+        // Authentication functions
+        function showLoginForm() {
+            document.getElementById('registerForm').classList.add('d-none');
+            document.getElementById('loginForm').classList.remove('d-none');
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('d-none');
+            document.getElementById('registerForm').classList.remove('d-none');
+        }
+
+        // Login
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    showMessage('خطأ في تسجيل الدخول: ' + error.message, 'error');
+                } else {
+                    showMessage('تم تسجيل الدخول بنجاح!', 'success');
+                    showDashboard(data.user);
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        });
+
+        // Register
+        document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showMessage('كلمات المرور غير متطابقة', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name
+                        }
+                    }
+                });
+
+                if (error) {
+                    showMessage('خطأ في إنشاء الحساب: ' + error.message, 'error');
+                } else {
+                    showMessage('تم إنشاء الحساب بنجاح!', 'success');
+                    setTimeout(() => {
+                        showLoginForm();
+                    }, 2000);
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        });
+
+        // Show dashboard
+        function showDashboard(user) {
+            currentUser = user;
+            authSection.classList.add('d-none');
+            dashboardSection.classList.remove('d-none');
+            mainNavigation.style.display = 'flex';
+            userDropdown.style.display = 'block';
+            userNameNav.textContent = user.user_metadata?.full_name || user.email;
+            
+            loadDashboardData();
+        }
+
+        // Logout
+        function logout() {
+            supabase.auth.signOut();
+            currentUser = null;
+            authSection.classList.remove('d-none');
+            dashboardSection.classList.add('d-none');
+            apartmentsSection.classList.add('d-none');
+            bookingsSection.classList.add('d-none');
+            statisticsSection.classList.add('d-none');
+            mainNavigation.style.display = 'none';
+            userDropdown.style.display = 'none';
+            showMessage('تم تسجيل الخروج بنجاح', 'success');
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load apartments count
+                const { data: apartmentsData, error: apartmentsError } = await supabase
+                    .from('apartments')
+                    .select('*', { count: 'exact' });
+
+                if (!apartmentsError) {
+                    document.getElementById('totalApartments').textContent = apartmentsData?.length || 0;
+                }
+
+                // Load bookings count
+                const { data: bookingsData, error: bookingsError } = await supabase
+                    .from('bookings')
+                    .select('*', { count: 'exact' });
+
+                if (!bookingsError) {
+                    document.getElementById('totalBookings').textContent = bookingsData?.length || 0;
+                    
+                    // Count active bookings
+                    const activeBookings = bookingsData?.filter(booking => 
+                        booking.status === 'confirmed' && new Date(booking.check_out_date) >= new Date()
+                    ).length || 0;
+                    document.getElementById('activeBookings').textContent = activeBookings;
+                }
+
+                // Calculate monthly revenue (placeholder)
+                document.getElementById('monthlyRevenue').textContent = '0 د.ج';
+
+                // Load recent activities
+                loadRecentActivities();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load recent activities
+        async function loadRecentActivities() {
+            const activitiesContainer = document.getElementById('recentActivities');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) {
+                    activitiesContainer.innerHTML = `
+                        <div class="text-center text-muted">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            لا توجد أنشطة حديثة
+                        </div>
+                    `;
+                } else if (data && data.length > 0) {
+                    activitiesContainer.innerHTML = data.map(activity => `
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-circle-fill text-primary" style="font-size: 0.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-bold">${activity.description}</div>
+                                <small class="text-muted">${new Date(activity.created_at).toLocaleDateString('ar-DZ')}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    activitiesContainer.innerHTML = `
+                        <div class="text-center text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            لا توجد أنشطة حديثة
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                activitiesContainer.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        خطأ في تحميل الأنشطة
+                    </div>
+                `;
+            }
+        }
+
+        // Load apartments
+        async function loadApartments() {
+            const apartmentsGrid = document.getElementById('apartmentsGrid');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('apartments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    apartmentsGrid.innerHTML = `
+                        <div class="col-12 text-center">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                خطأ في تحميل الشقق: ${error.message}
+                            </div>
+                        </div>
+                    `;
+                } else if (data && data.length > 0) {
+                    apartments = data;
+                    apartmentsGrid.innerHTML = data.map(apartment => `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card apartment-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">${apartment.name}</h5>
+                                    <p class="card-text text-muted">${apartment.address}</p>
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <i class="bi bi-door-open text-primary"></i>
+                                            <small class="d-block">${apartment.rooms} غرف</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <i class="bi bi-droplet text-info"></i>
+                                            <small class="d-block">${apartment.bathrooms} حمام</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <i class="bi bi-cash text-success"></i>
+                                            <small class="d-block">${apartment.daily_price} د.ج</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text">${apartment.description || 'لا يوجد وصف'}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="btn-group w-100">
+                                        <button class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-pencil"></i>
+                                            تعديل
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                            حذف
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    apartmentsGrid.innerHTML = `
+                        <div class="col-12 text-center">
+                            <div class="card">
+                                <div class="card-body">
+                                    <i class="bi bi-building display-1 text-muted"></i>
+                                    <h3 class="mt-3">لا توجد شقق مسجلة</h3>
+                                    <p class="text-muted">ابدأ بإضافة شقتك الأولى</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#apartmentModal">
+                                        <i class="bi bi-plus-circle"></i>
+                                        إضافة شقة جديدة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                apartmentsGrid.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            خطأ في الاتصال: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load bookings
+        async function loadBookings() {
+            const bookingsTable = document.getElementById('bookingsTable');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        apartments (
+                            name
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    bookingsTable.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    خطأ في تحميل الحجوزات: ${error.message}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                } else if (data && data.length > 0) {
+                    bookings = data;
+                    bookingsTable.innerHTML = data.map(booking => `
+                        <tr>
+                            <td>#${booking.id}</td>
+                            <td>${booking.apartments?.name || 'غير محدد'}</td>
+                            <td>${booking.guest_name}</td>
+                            <td>${new Date(booking.check_in_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${new Date(booking.check_out_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${booking.total_amount} د.ج</td>
+                            <td>
+                                <span class="booking-status status-${booking.status}">
+                                    ${booking.status === 'confirmed' ? 'مؤكد' : 
+                                      booking.status === 'pending' ? 'في الانتظار' : 
+                                      booking.status === 'cancelled' ? 'ملغي' : booking.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    bookingsTable.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <i class="bi bi-calendar-x display-4 text-muted"></i>
+                                <p class="mt-3">لا توجد حجوزات مسجلة</p>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                                    <i class="bi bi-plus-circle"></i>
+                                    إضافة حجز جديد
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                bookingsTable.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                خطأ في الاتصال: ${error.message}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Save apartment
+        async function saveApartment() {
+            const apartmentData = {
+                name: document.getElementById('apartmentName').value,
+                address: document.getElementById('apartmentAddress').value,
+                daily_price: parseFloat(document.getElementById('apartmentPrice').value),
+                rooms: parseInt(document.getElementById('apartmentRooms').value),
+                bathrooms: parseInt(document.getElementById('apartmentBathrooms').value),
+                description: document.getElementById('apartmentDescription').value,
+                user_id: currentUser.id
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('apartments')
+                    .insert([apartmentData]);
+
+                if (error) {
+                    showMessage('خطأ في حفظ الشقة: ' + error.message, 'error');
+                } else {
+                    showMessage('تم حفظ الشقة بنجاح!', 'success');
+                    document.getElementById('apartmentForm').reset();
+                    bootstrap.Modal.getInstance(document.getElementById('apartmentModal')).hide();
+                    loadApartments();
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        }
+
+        // Save booking
+        async function saveBooking() {
+            const bookingData = {
+                apartment_id: document.getElementById('bookingApartment').value,
+                guest_name: document.getElementById('guestName').value,
+                guest_phone: document.getElementById('guestPhone').value,
+                guest_email: document.getElementById('guestEmail').value,
+                check_in_date: document.getElementById('checkInDate').value,
+                check_out_date: document.getElementById('checkOutDate').value,
+                total_amount: parseFloat(document.getElementById('totalAmount').value),
+                status: document.getElementById('bookingStatus').value,
+                notes: document.getElementById('bookingNotes').value,
+                user_id: currentUser.id
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .insert([bookingData]);
+
+                if (error) {
+                    showMessage('خطأ في حفظ الحجز: ' + error.message, 'error');
+                } else {
+                    showMessage('تم حفظ الحجز بنجاح!', 'success');
+                    document.getElementById('bookingForm').reset();
+                    bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+                    loadBookings();
+                }
+            } catch (error) {
+                showMessage('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeToggle.innerHTML = '<i class="bi bi-moon"></i> الوضع الليلي';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="bi bi-sun"></i> الوضع النهاري';
+            }
+        }
+
+        // Load apartments in booking modal
+        document.getElementById('bookingModal').addEventListener('show.bs.modal', async () => {
+            const apartmentSelect = document.getElementById('bookingApartment');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('apartments')
+                    .select('id, name, daily_price');
+
+                if (!error && data) {
+                    apartmentSelect.innerHTML = '<option value="">اختر الشقة</option>' +
+                        data.map(apt => `<option value="${apt.id}" data-price="${apt.daily_price}">${apt.name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading apartments for booking:', error);
+            }
+        });
+
+        // Calculate total amount when dates change
+        document.getElementById('checkInDate').addEventListener('change', calculateTotal);
+        document.getElementById('checkOutDate').addEventListener('change', calculateTotal);
+        document.getElementById('bookingApartment').addEventListener('change', calculateTotal);
+
+        function calculateTotal() {
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+            const apartmentSelect = document.getElementById('bookingApartment');
+            const selectedOption = apartmentSelect.options[apartmentSelect.selectedIndex];
+            
+            if (checkIn && checkOut && selectedOption && selectedOption.dataset.price) {
+                const days = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                const dailyPrice = parseFloat(selectedOption.dataset.price);
+                const total = days * dailyPrice;
+                
+                document.getElementById('totalAmount').value = total > 0 ? total : 0;
+            }
+        }
+
+        // Check authentication state
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                showDashboard(session.user);
+            } else {
+                logout();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('تطبيق إدارة الشقق جاهز للعمل!');
+        });
+    </script>
+</body>
+</html>

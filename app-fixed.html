@@ -1028,6 +1028,42 @@
         
         // Demo user ID for testing (matches the one in instant_fix.sql)
         const DEMO_USER_ID = '1a4278e3-41eb-4e36-9f39-393cd6a2f24e';
+        
+        // Function to ensure demo user exists
+        async function ensureDemoUserExists() {
+            try {
+                // Check if user profile exists
+                const { data: profile, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('id')
+                    .eq('id', DEMO_USER_ID)
+                    .single();
+                
+                if (!profile) {
+                    console.log('Creating demo user profile...');
+                    // Create user profile
+                    const { error: insertError } = await supabase
+                        .from('user_profiles')
+                        .insert([{
+                            id: DEMO_USER_ID,
+                            full_name: 'مستخدم تجريبي',
+                            role: 'user',
+                            phone: '+213555123456'
+                        }]);
+                    
+                    if (insertError) {
+                        console.error('Error creating demo user profile:', insertError);
+                    } else {
+                        console.log('Demo user profile created successfully');
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error ensuring demo user exists:', error);
+                return false;
+            }
+        }
 
         // Global variables
         let currentUser = null;
@@ -2029,12 +2065,21 @@
                     }
 
                     try {
+                        console.log('Attempting to insert apartment:', formData);
+                        
+                        // Ensure demo user exists first
+                        await ensureDemoUserExists();
+                        
                         const { data, error } = await supabase
                             .from('apartments')
                             .insert([formData]);
 
-                        if (error) throw error;
+                        if (error) {
+                            console.error('Supabase error:', error);
+                            throw error;
+                        }
 
+                        console.log('Apartment inserted successfully:', data);
                         showMessage('تم إضافة الشقة بنجاح!', 'success');
                         hideAddApartmentForm();
                         loadApartments();
@@ -2044,7 +2089,10 @@
 
                     } catch (error) {
                         console.error('Error adding apartment:', error);
-                        showMessage('خطأ في إضافة الشقة: ' + error.message, 'error');
+                        console.error('Error details:', error.details);
+                        console.error('Error hint:', error.hint);
+                        console.error('Error code:', error.code);
+                        showMessage('خطأ في إضافة الشقة: ' + (error.message || error.details || 'خطأ غير معروف'), 'error');
                     }
                 });
             }

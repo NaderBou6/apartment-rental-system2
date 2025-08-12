@@ -379,30 +379,304 @@
 
             <!-- Apartments Section -->
             <div id="apartmentsContent" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="bi bi-building"></i> إدارة الشقق</h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5><i class="bi bi-building"></i> قائمة الشقق</h5>
+                                <button class="btn btn-primary btn-sm" onclick="showAddApartmentForm()">
+                                    <i class="bi bi-plus"></i> إضافة شقة جديدة
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>اسم الشقة</th>
+                                                <th>العنوان</th>
+                                                <th>السعر اليومي</th>
+                                                <th>الغرف</th>
+                                                <th>الحمامات</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="apartmentsTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">جاري التحميل...</span>
+                                                    </div>
+                                                    <p class="mt-2">جاري تحميل الشقق...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p>قسم إدارة الشقق - يمكنك إضافة وتعديل الشقق هنا.</p>
-                        <button class="btn btn-primary">
-                            <i class="bi bi-plus"></i> إضافة شقة جديدة
-                        </button>
+                    
+                    <div class="col-md-4">
+                        <!-- Add Apartment Form -->
+                        <div class="card" id="addApartmentCard" style="display: none;">
+                            <div class="card-header">
+                                <h6><i class="bi bi-plus-circle"></i> إضافة شقة جديدة</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="addApartmentForm">
+                                    <div class="mb-3">
+                                        <label for="apartmentName" class="form-label">اسم الشقة</label>
+                                        <input type="text" class="form-control" id="apartmentName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="apartmentAddress" class="form-label">العنوان</label>
+                                        <textarea class="form-control" id="apartmentAddress" rows="2" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="apartmentPrice" class="form-label">السعر اليومي (د.ج)</label>
+                                        <input type="number" class="form-control" id="apartmentPrice" min="0" step="100" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="apartmentRooms" class="form-label">عدد الغرف</label>
+                                            <input type="number" class="form-control" id="apartmentRooms" min="1" max="10" value="2">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="apartmentBathrooms" class="form-label">عدد الحمامات</label>
+                                            <input type="number" class="form-control" id="apartmentBathrooms" min="1" max="5" value="1">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 mt-3">
+                                        <label for="apartmentDescription" class="form-label">الوصف</label>
+                                        <textarea class="form-control" id="apartmentDescription" rows="3"></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> حفظ الشقة
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="hideAddApartmentForm()">
+                                            <i class="bi bi-x"></i> إلغاء
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit Apartment Form -->
+                        <div class="card" id="editApartmentCard" style="display: none;">
+                            <div class="card-header">
+                                <h6><i class="bi bi-pencil"></i> تعديل الشقة</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="editApartmentForm">
+                                    <input type="hidden" id="editApartmentId">
+                                    <div class="mb-3">
+                                        <label for="editApartmentName" class="form-label">اسم الشقة</label>
+                                        <input type="text" class="form-control" id="editApartmentName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editApartmentAddress" class="form-label">العنوان</label>
+                                        <textarea class="form-control" id="editApartmentAddress" rows="2" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editApartmentPrice" class="form-label">السعر اليومي (د.ج)</label>
+                                        <input type="number" class="form-control" id="editApartmentPrice" min="0" step="100" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="editApartmentRooms" class="form-label">عدد الغرف</label>
+                                            <input type="number" class="form-control" id="editApartmentRooms" min="1" max="10">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="editApartmentBathrooms" class="form-label">عدد الحمامات</label>
+                                            <input type="number" class="form-control" id="editApartmentBathrooms" min="1" max="5">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 mt-3">
+                                        <label for="editApartmentDescription" class="form-label">الوصف</label>
+                                        <textarea class="form-control" id="editApartmentDescription" rows="3"></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-check"></i> حفظ التعديلات
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="hideEditApartmentForm()">
+                                            <i class="bi bi-x"></i> إلغاء
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Bookings Section -->
             <div id="bookingsContent" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="bi bi-calendar-check"></i> إدارة الحجوزات</h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5><i class="bi bi-calendar-check"></i> قائمة الحجوزات</h5>
+                                <button class="btn btn-primary btn-sm" onclick="showAddBookingForm()">
+                                    <i class="bi bi-plus"></i> إضافة حجز جديد
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>الشقة</th>
+                                                <th>النزيل</th>
+                                                <th>تاريخ الوصول</th>
+                                                <th>تاريخ المغادرة</th>
+                                                <th>المبلغ</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bookingsTableBody">
+                                            <tr>
+                                                <td colspan="7" class="text-center">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">جاري التحميل...</span>
+                                                    </div>
+                                                    <p class="mt-2">جاري تحميل الحجوزات...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p>قسم إدارة الحجوزات - يمكنك إضافة وتعديل الحجوزات هنا.</p>
-                        <button class="btn btn-primary">
-                            <i class="bi bi-plus"></i> إضافة حجز جديد
-                        </button>
+                    
+                    <div class="col-md-4">
+                        <!-- Add Booking Form -->
+                        <div class="card" id="addBookingCard" style="display: none;">
+                            <div class="card-header">
+                                <h6><i class="bi bi-plus-circle"></i> إضافة حجز جديد</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="addBookingForm">
+                                    <div class="mb-3">
+                                        <label for="bookingApartment" class="form-label">الشقة</label>
+                                        <select class="form-select" id="bookingApartment" required>
+                                            <option value="">اختر الشقة</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingGuestName" class="form-label">اسم النزيل</label>
+                                        <input type="text" class="form-control" id="bookingGuestName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingGuestPhone" class="form-label">رقم الهاتف</label>
+                                        <input type="tel" class="form-control" id="bookingGuestPhone" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingGuestEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="bookingGuestEmail">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingStartDate" class="form-label">تاريخ الوصول</label>
+                                        <input type="date" class="form-control" id="bookingStartDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingEndDate" class="form-label">تاريخ المغادرة</label>
+                                        <input type="date" class="form-control" id="bookingEndDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingTotalPrice" class="form-label">المبلغ الإجمالي (د.ج)</label>
+                                        <input type="number" class="form-control" id="bookingTotalPrice" readonly>
+                                        <small class="form-text text-muted">سيتم حساب المبلغ تلقائياً</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingStatus" class="form-label">حالة الحجز</label>
+                                        <select class="form-select" id="bookingStatus">
+                                            <option value="confirmed">مؤكد</option>
+                                            <option value="pending">في الانتظار</option>
+                                            <option value="cancelled">ملغي</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bookingNotes" class="form-label">ملاحظات</label>
+                                        <textarea class="form-control" id="bookingNotes" rows="2"></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> حفظ الحجز
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="hideAddBookingForm()">
+                                            <i class="bi bi-x"></i> إلغاء
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit Booking Form -->
+                        <div class="card" id="editBookingCard" style="display: none;">
+                            <div class="card-header">
+                                <h6><i class="bi bi-pencil"></i> تعديل الحجز</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="editBookingForm">
+                                    <input type="hidden" id="editBookingId">
+                                    <div class="mb-3">
+                                        <label for="editBookingApartment" class="form-label">الشقة</label>
+                                        <select class="form-select" id="editBookingApartment" required>
+                                            <option value="">اختر الشقة</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingGuestName" class="form-label">اسم النزيل</label>
+                                        <input type="text" class="form-control" id="editBookingGuestName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingGuestPhone" class="form-label">رقم الهاتف</label>
+                                        <input type="tel" class="form-control" id="editBookingGuestPhone" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingGuestEmail" class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" id="editBookingGuestEmail">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingStartDate" class="form-label">تاريخ الوصول</label>
+                                        <input type="date" class="form-control" id="editBookingStartDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingEndDate" class="form-label">تاريخ المغادرة</label>
+                                        <input type="date" class="form-control" id="editBookingEndDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingTotalPrice" class="form-label">المبلغ الإجمالي (د.ج)</label>
+                                        <input type="number" class="form-control" id="editBookingTotalPrice" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingStatus" class="form-label">حالة الحجز</label>
+                                        <select class="form-select" id="editBookingStatus">
+                                            <option value="confirmed">مؤكد</option>
+                                            <option value="pending">في الانتظار</option>
+                                            <option value="cancelled">ملغي</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBookingNotes" class="form-label">ملاحظات</label>
+                                        <textarea class="form-control" id="editBookingNotes" rows="2"></textarea>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-check"></i> حفظ التعديلات
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="hideEditBookingForm()">
+                                            <i class="bi bi-x"></i> إلغاء
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -644,6 +918,11 @@
                 initializeCalendar();
             } else if (sectionName === 'statistics') {
                 initializeStatistics();
+            } else if (sectionName === 'apartments') {
+                loadApartments();
+            } else if (sectionName === 'bookings') {
+                loadBookings();
+                loadApartmentsForBookings();
             }
         }
 
@@ -1225,6 +1504,560 @@
                     <td>${apt.averageBooking.toLocaleString()} د.ج</td>
                 </tr>
             `).join('');
+        }
+
+        // ==================== APARTMENTS FUNCTIONS ====================
+        
+        // Load apartments
+        async function loadApartments() {
+            const apartmentsTableBody = document.getElementById('apartmentsTableBody');
+            
+            try {
+                const { data: apartments, error } = await supabase
+                    .from('apartments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!apartments || apartments.length === 0) {
+                    apartmentsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                لا توجد شقق مضافة بعد
+                                <br>
+                                <button class="btn btn-primary btn-sm mt-2" onclick="showAddApartmentForm()">
+                                    <i class="bi bi-plus"></i> إضافة أول شقة
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                apartmentsTableBody.innerHTML = apartments.map(apartment => `
+                    <tr>
+                        <td><strong>${apartment.name}</strong></td>
+                        <td>${apartment.address}</td>
+                        <td>${parseFloat(apartment.daily_price).toLocaleString()} د.ج</td>
+                        <td>${apartment.rooms || 2}</td>
+                        <td>${apartment.bathrooms || 1}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editApartment(${apartment.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteApartment(${apartment.id}, '${apartment.name}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading apartments:', error);
+                // Show demo data if database fails
+                apartmentsTableBody.innerHTML = `
+                    <tr>
+                        <td><strong>شقة الواحة</strong></td>
+                        <td>حي السلام، الجزائر</td>
+                        <td>3,000 د.ج</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>شقة النخيل</strong></td>
+                        <td>حي الرياض، الجزائر</td>
+                        <td>3,500 د.ج</td>
+                        <td>3</td>
+                        <td>2</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <small class="text-muted">بيانات تجريبية - تحقق من اتصال قاعدة البيانات</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Show add apartment form
+        function showAddApartmentForm() {
+            document.getElementById('addApartmentCard').style.display = 'block';
+            document.getElementById('editApartmentCard').style.display = 'none';
+            document.getElementById('addApartmentForm').reset();
+        }
+
+        // Hide add apartment form
+        function hideAddApartmentForm() {
+            document.getElementById('addApartmentCard').style.display = 'none';
+        }
+
+        // Add apartment form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const addApartmentForm = document.getElementById('addApartmentForm');
+            if (addApartmentForm) {
+                addApartmentForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        name: document.getElementById('apartmentName').value,
+                        address: document.getElementById('apartmentAddress').value,
+                        daily_price: parseFloat(document.getElementById('apartmentPrice').value),
+                        rooms: parseInt(document.getElementById('apartmentRooms').value) || 2,
+                        bathrooms: parseInt(document.getElementById('apartmentBathrooms').value) || 1,
+                        description: document.getElementById('apartmentDescription').value
+                    };
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('apartments')
+                            .insert([formData]);
+
+                        if (error) throw error;
+
+                        showMessage('تم إضافة الشقة بنجاح!', 'success');
+                        hideAddApartmentForm();
+                        loadApartments();
+                        loadDashboardData();
+
+                    } catch (error) {
+                        console.error('Error adding apartment:', error);
+                        showMessage('خطأ في إضافة الشقة: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Edit apartment
+        async function editApartment(apartmentId) {
+            try {
+                const { data: apartment, error } = await supabase
+                    .from('apartments')
+                    .select('*')
+                    .eq('id', apartmentId)
+                    .single();
+
+                if (error) throw error;
+
+                // Fill edit form
+                document.getElementById('editApartmentId').value = apartment.id;
+                document.getElementById('editApartmentName').value = apartment.name;
+                document.getElementById('editApartmentAddress').value = apartment.address;
+                document.getElementById('editApartmentPrice').value = apartment.daily_price;
+                document.getElementById('editApartmentRooms').value = apartment.rooms || 2;
+                document.getElementById('editApartmentBathrooms').value = apartment.bathrooms || 1;
+                document.getElementById('editApartmentDescription').value = apartment.description || '';
+
+                // Show edit form
+                document.getElementById('editApartmentCard').style.display = 'block';
+                document.getElementById('addApartmentCard').style.display = 'none';
+
+            } catch (error) {
+                console.error('Error loading apartment:', error);
+                showMessage('خطأ في تحميل بيانات الشقة', 'error');
+            }
+        }
+
+        // Hide edit apartment form
+        function hideEditApartmentForm() {
+            document.getElementById('editApartmentCard').style.display = 'none';
+        }
+
+        // Edit apartment form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const editApartmentForm = document.getElementById('editApartmentForm');
+            if (editApartmentForm) {
+                editApartmentForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const apartmentId = document.getElementById('editApartmentId').value;
+                    const formData = {
+                        name: document.getElementById('editApartmentName').value,
+                        address: document.getElementById('editApartmentAddress').value,
+                        daily_price: parseFloat(document.getElementById('editApartmentPrice').value),
+                        rooms: parseInt(document.getElementById('editApartmentRooms').value) || 2,
+                        bathrooms: parseInt(document.getElementById('editApartmentBathrooms').value) || 1,
+                        description: document.getElementById('editApartmentDescription').value
+                    };
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('apartments')
+                            .update(formData)
+                            .eq('id', apartmentId);
+
+                        if (error) throw error;
+
+                        showMessage('تم تحديث الشقة بنجاح!', 'success');
+                        hideEditApartmentForm();
+                        loadApartments();
+                        loadDashboardData();
+
+                    } catch (error) {
+                        console.error('Error updating apartment:', error);
+                        showMessage('خطأ في تحديث الشقة: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Delete apartment
+        async function deleteApartment(apartmentId, apartmentName) {
+            if (!confirm(`هل أنت متأكد من حذف الشقة "${apartmentName}"؟\nسيتم حذف جميع الحجوزات المرتبطة بها أيضاً.`)) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('apartments')
+                    .delete()
+                    .eq('id', apartmentId);
+
+                if (error) throw error;
+
+                showMessage('تم حذف الشقة بنجاح!', 'success');
+                loadApartments();
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error deleting apartment:', error);
+                showMessage('خطأ في حذف الشقة: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== BOOKINGS FUNCTIONS ====================
+
+        // Load bookings
+        async function loadBookings() {
+            const bookingsTableBody = document.getElementById('bookingsTableBody');
+            
+            try {
+                const { data: bookings, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        apartments (
+                            name
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!bookings || bookings.length === 0) {
+                    bookingsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                لا توجد حجوزات مضافة بعد
+                                <br>
+                                <button class="btn btn-primary btn-sm mt-2" onclick="showAddBookingForm()">
+                                    <i class="bi bi-plus"></i> إضافة أول حجز
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                bookingsTableBody.innerHTML = bookings.map(booking => {
+                    const statusClass = booking.status === 'confirmed' ? 'success' : 
+                                       booking.status === 'pending' ? 'warning' : 'danger';
+                    const statusText = booking.status === 'confirmed' ? 'مؤكد' : 
+                                      booking.status === 'pending' ? 'في الانتظار' : 'ملغي';
+                    
+                    return `
+                        <tr>
+                            <td><strong>${booking.apartments?.name || 'غير محدد'}</strong></td>
+                            <td>${booking.guest_name}</td>
+                            <td>${new Date(booking.start_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${new Date(booking.end_date).toLocaleDateString('ar-DZ')}</td>
+                            <td>${parseFloat(booking.total_price).toLocaleString()} د.ج</td>
+                            <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editBooking(${booking.id})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBooking(${booking.id}, '${booking.guest_name}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                // Show demo data if database fails
+                bookingsTableBody.innerHTML = `
+                    <tr>
+                        <td><strong>شقة الواحة</strong></td>
+                        <td>أحمد محمد</td>
+                        <td>15/12/2024</td>
+                        <td>20/12/2024</td>
+                        <td>15,000 د.ج</td>
+                        <td><span class="badge bg-success">مؤكد</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <small class="text-muted">بيانات تجريبية - تحقق من اتصال قاعدة البيانات</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Load apartments for bookings
+        async function loadApartmentsForBookings() {
+            try {
+                const { data: apartments } = await supabase
+                    .from('apartments')
+                    .select('id, name, daily_price');
+
+                if (apartments) {
+                    const options = apartments.map(apt => 
+                        `<option value="${apt.id}" data-price="${apt.daily_price}">${apt.name}</option>`
+                    ).join('');
+                    
+                    document.getElementById('bookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
+                    document.getElementById('editBookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
+                }
+            } catch (error) {
+                console.log('Error loading apartments for bookings:', error);
+            }
+        }
+
+        // Show add booking form
+        function showAddBookingForm() {
+            document.getElementById('addBookingCard').style.display = 'block';
+            document.getElementById('editBookingCard').style.display = 'none';
+            document.getElementById('addBookingForm').reset();
+            
+            // Set default dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('bookingStartDate').value = today.toISOString().split('T')[0];
+            document.getElementById('bookingEndDate').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        // Hide add booking form
+        function hideAddBookingForm() {
+            document.getElementById('addBookingCard').style.display = 'none';
+        }
+
+        // Calculate booking price
+        function calculateBookingPrice(apartmentSelect, startDateInput, endDateInput, totalPriceInput) {
+            const apartmentOption = apartmentSelect.selectedOptions[0];
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            
+            if (apartmentOption && startDate && endDate && endDate > startDate) {
+                const dailyPrice = parseFloat(apartmentOption.dataset.price) || 0;
+                const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                const totalPrice = dailyPrice * nights;
+                
+                totalPriceInput.value = totalPrice;
+            } else {
+                totalPriceInput.value = '';
+            }
+        }
+
+        // Add event listeners for price calculation
+        document.addEventListener('DOMContentLoaded', () => {
+            // For add booking form
+            const bookingApartment = document.getElementById('bookingApartment');
+            const bookingStartDate = document.getElementById('bookingStartDate');
+            const bookingEndDate = document.getElementById('bookingEndDate');
+            const bookingTotalPrice = document.getElementById('bookingTotalPrice');
+            
+            if (bookingApartment && bookingStartDate && bookingEndDate && bookingTotalPrice) {
+                [bookingApartment, bookingStartDate, bookingEndDate].forEach(element => {
+                    element.addEventListener('change', () => {
+                        calculateBookingPrice(bookingApartment, bookingStartDate, bookingEndDate, bookingTotalPrice);
+                    });
+                });
+            }
+            
+            // For edit booking form
+            const editBookingApartment = document.getElementById('editBookingApartment');
+            const editBookingStartDate = document.getElementById('editBookingStartDate');
+            const editBookingEndDate = document.getElementById('editBookingEndDate');
+            const editBookingTotalPrice = document.getElementById('editBookingTotalPrice');
+            
+            if (editBookingApartment && editBookingStartDate && editBookingEndDate && editBookingTotalPrice) {
+                [editBookingApartment, editBookingStartDate, editBookingEndDate].forEach(element => {
+                    element.addEventListener('change', () => {
+                        calculateBookingPrice(editBookingApartment, editBookingStartDate, editBookingEndDate, editBookingTotalPrice);
+                    });
+                });
+            }
+        });
+
+        // Add booking form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const addBookingForm = document.getElementById('addBookingForm');
+            if (addBookingForm) {
+                addBookingForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        apartment_id: parseInt(document.getElementById('bookingApartment').value),
+                        guest_name: document.getElementById('bookingGuestName').value,
+                        guest_phone: document.getElementById('bookingGuestPhone').value,
+                        guest_email: document.getElementById('bookingGuestEmail').value,
+                        start_date: document.getElementById('bookingStartDate').value,
+                        end_date: document.getElementById('bookingEndDate').value,
+                        total_price: parseFloat(document.getElementById('bookingTotalPrice').value),
+                        status: document.getElementById('bookingStatus').value,
+                        notes: document.getElementById('bookingNotes').value
+                    };
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('bookings')
+                            .insert([formData]);
+
+                        if (error) throw error;
+
+                        showMessage('تم إضافة الحجز بنجاح!', 'success');
+                        hideAddBookingForm();
+                        loadBookings();
+                        loadDashboardData();
+
+                    } catch (error) {
+                        console.error('Error adding booking:', error);
+                        showMessage('خطأ في إضافة الحجز: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Edit booking
+        async function editBooking(bookingId) {
+            try {
+                const { data: booking, error } = await supabase
+                    .from('bookings')
+                    .select('*')
+                    .eq('id', bookingId)
+                    .single();
+
+                if (error) throw error;
+
+                // Fill edit form
+                document.getElementById('editBookingId').value = booking.id;
+                document.getElementById('editBookingApartment').value = booking.apartment_id;
+                document.getElementById('editBookingGuestName').value = booking.guest_name;
+                document.getElementById('editBookingGuestPhone').value = booking.guest_phone;
+                document.getElementById('editBookingGuestEmail').value = booking.guest_email || '';
+                document.getElementById('editBookingStartDate').value = booking.start_date;
+                document.getElementById('editBookingEndDate').value = booking.end_date;
+                document.getElementById('editBookingTotalPrice').value = booking.total_price;
+                document.getElementById('editBookingStatus').value = booking.status;
+                document.getElementById('editBookingNotes').value = booking.notes || '';
+
+                // Show edit form
+                document.getElementById('editBookingCard').style.display = 'block';
+                document.getElementById('addBookingCard').style.display = 'none';
+
+            } catch (error) {
+                console.error('Error loading booking:', error);
+                showMessage('خطأ في تحميل بيانات الحجز', 'error');
+            }
+        }
+
+        // Hide edit booking form
+        function hideEditBookingForm() {
+            document.getElementById('editBookingCard').style.display = 'none';
+        }
+
+        // Edit booking form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const editBookingForm = document.getElementById('editBookingForm');
+            if (editBookingForm) {
+                editBookingForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const bookingId = document.getElementById('editBookingId').value;
+                    const formData = {
+                        apartment_id: parseInt(document.getElementById('editBookingApartment').value),
+                        guest_name: document.getElementById('editBookingGuestName').value,
+                        guest_phone: document.getElementById('editBookingGuestPhone').value,
+                        guest_email: document.getElementById('editBookingGuestEmail').value,
+                        start_date: document.getElementById('editBookingStartDate').value,
+                        end_date: document.getElementById('editBookingEndDate').value,
+                        total_price: parseFloat(document.getElementById('editBookingTotalPrice').value),
+                        status: document.getElementById('editBookingStatus').value,
+                        notes: document.getElementById('editBookingNotes').value
+                    };
+
+                    try {
+                        const { data, error } = await supabase
+                            .from('bookings')
+                            .update(formData)
+                            .eq('id', bookingId);
+
+                        if (error) throw error;
+
+                        showMessage('تم تحديث الحجز بنجاح!', 'success');
+                        hideEditBookingForm();
+                        loadBookings();
+                        loadDashboardData();
+
+                    } catch (error) {
+                        console.error('Error updating booking:', error);
+                        showMessage('خطأ في تحديث الحجز: ' + error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Delete booking
+        async function deleteBooking(bookingId, guestName) {
+            if (!confirm(`هل أنت متأكد من حذف حجز "${guestName}"؟`)) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('bookings')
+                    .delete()
+                    .eq('id', bookingId);
+
+                if (error) throw error;
+
+                showMessage('تم حذف الحجز بنجاح!', 'success');
+                loadBookings();
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error deleting booking:', error);
+                showMessage('خطأ في حذف الحجز: ' + error.message, 'error');
+            }
         }
 
         // Initialize

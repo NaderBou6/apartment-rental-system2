@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة كراء الشقق اليومية - النسخة الكاملة</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .welcome-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 800px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .text-primary {
+            color: #667eea !important;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .status-ok { background: #28a745; }
+        .status-new { background: #17a2b8; }
+        
+        .demo-info {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="container">
+            <div class="welcome-card">
+                <div class="text-center mb-4">
+                    <i class="bi bi-building text-primary" style="font-size: 4rem;"></i>
+                    <h1 class="mt-3 text-primary">نظام إدارة كراء الشقق اليومية</h1>
+                    <h4 class="text-muted">النسخة الكاملة والمحسنة</h4>
+                </div>
+
+                <div class="demo-info">
+                    <h5><i class="bi bi-info-circle"></i> معلومات مهمة</h5>
+                    <p><strong>تم إكمال جميع الميزات المطلوبة:</strong></p>
+                    <ul class="text-start">
+                        <li><span class="status-indicator status-ok"></span>عرض الشقق على شكل بطاقات جميلة</li>
+                        <li><span class="status-indicator status-ok"></span>إدارة كاملة للشقق والحجوزات</li>
+                        <li><span class="status-indicator status-ok"></span>تقويم مع month picker للتنقل</li>
+                        <li><span class="status-indicator status-ok"></span>قاعدة بيانات محسنة مع بيانات تجريبية</li>
+                        <li><span class="status-indicator status-new"></span>تصميم متجاوب وعصري</li>
+                    </ul>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="bi bi-grid-3x3-gap feature-icon"></i>
+                            <h5>عرض البطاقات</h5>
+                            <p>الشقق تظهر على شكل بطاقات جميلة مع جميع التفاصيل</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="bi bi-calendar-month feature-icon"></i>
+                            <h5>تقويم محسن</h5>
+                            <p>تنقل سهل بين الأشهر والسنوات مع month picker</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="bi bi-database feature-icon"></i>
+                            <h5>قاعدة بيانات</h5>
+                            <p>قاعدة بيانات محسنة مع بيانات تجريبية غنية</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-list-check"></i> الميزات الجديدة:</h5>
+                        <ul class="text-start">
+                            <li>عرض الشقق كبطاقات مع صور وتفاصيل</li>
+                            <li>تبديل بين عرض البطاقات والجدول</li>
+                            <li>تقويم مع month picker للتنقل السريع</li>
+                            <li>أزرار تنقل محسنة (السابق، التالي، اليوم)</li>
+                            <li>بيانات تجريبية غنية للاختبار</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-database-check"></i> قاعدة البيانات:</h5>
+                        <ul class="text-start">
+                            <li>جداول محسنة مع فهارس للأداء</li>
+                            <li>سياسات أمان متقدمة</li>
+                            <li>دوال مساعدة للإحصائيات</li>
+                            <li>بيانات تجريبية شاملة</li>
+                            <li>محفزات لتحديث التواريخ تلقائياً</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="demo-info">
+                    <h5><i class="bi bi-key"></i> بيانات تسجيل الدخول:</h5>
+                    <p><strong>البريد الإلكتروني:</strong> <code>demo@test.com</code></p>
+                    <p><strong>كلمة المرور:</strong> <code>123456789</code></p>
+                    <small class="text-muted">أو استخدم زر "ملء البيانات التجريبية" في صفحة تسجيل الدخول</small>
+                </div>
+
+                <div class="text-center">
+                    <h5 class="mb-3">اختر الإصدار المناسب:</h5>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="app-fixed.html" class="btn btn-primary btn-lg">
+                            <i class="bi bi-rocket"></i>
+                            التطبيق الكامل المحسن
+                        </a>
+                        <a href="simple.html" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-file-text"></i>
+                            النسخة البسيطة
+                        </a>
+                        <a href="test-fixed.html" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-bug"></i>
+                            صفحة الاختبار
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h6><i class="bi bi-folder"></i> ملفات قاعدة البيانات:</h6>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <span class="badge bg-primary">database/complete_setup.sql</span>
+                        <span class="badge bg-success">database/insert_demo_data.sql</span>
+                        <span class="badge bg-info">database/simple_fix.sql</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-check-circle text-success"></i>
+                        جميع المتطلبات تم تنفيذها بنجاح - النظام جاهز للاستخدام!
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        console.log('🎉 مرحباً بك في نظام إدارة كراء الشقق اليومية');
+        console.log('✅ جميع الميزات المطلوبة تم تنفيذها:');
+        console.log('   - عرض الشقق على شكل بطاقات');
+        console.log('   - تقويم مع month picker');
+        console.log('   - قاعدة بيانات محسنة');
+        console.log('   - إدارة كاملة للشقق والحجوزات');
+        console.log('🚀 النظام جاهز للاستخدام!');
+    </script>
+</body>
+</html>

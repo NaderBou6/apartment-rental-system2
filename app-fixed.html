@@ -1241,7 +1241,8 @@
                 // Load apartments count
                 const { data: apartmentsData, error: apartmentsError } = await supabase
                     .from('apartments')
-                    .select('*', { count: 'exact' });
+                    .select('*', { count: 'exact' })
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID);
 
                 if (!apartmentsError) {
                     document.getElementById('totalApartments').textContent = apartmentsData?.length || 0;
@@ -1251,6 +1252,7 @@
                 const { data: bookingsData, error: bookingsError } = await supabase
                     .from('bookings')
                     .select('*', { count: 'exact' })
+                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .neq('status', 'cancelled');
 
                 if (!bookingsError) {
@@ -1384,6 +1386,7 @@
                 let bookingsQuery = supabase
                     .from('bookings')
                     .select('start_date, end_date, apartment_id')
+                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .neq('status', 'cancelled')
                     .lte('start_date', endDate)
                     .gte('end_date', startDate);
@@ -1489,7 +1492,8 @@
             try {
                 const { data: apartments } = await supabase
                     .from('apartments')
-                    .select('id, name');
+                    .select('id, name')
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID);
 
                 if (apartments) {
                     const calendarSelect = document.getElementById('calendarApartment');
@@ -1575,7 +1579,7 @@
                 }
 
                 // Load apartments
-                let apartmentsQuery = supabase.from('apartments').select('*');
+                let apartmentsQuery = supabase.from('apartments').select('*').eq('user_id', currentUser?.id || DEMO_USER_ID);
                 if (selectedApartment) {
                     apartmentsQuery = apartmentsQuery.eq('id', selectedApartment);
                 }
@@ -1590,6 +1594,7 @@
                             name
                         )
                     `)
+                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .neq('status', 'cancelled');
 
                 if (selectedApartment) {
@@ -1745,6 +1750,7 @@
                 const { data: apartments, error } = await supabase
                     .from('apartments')
                     .select('*')
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -1949,6 +1955,7 @@
                     e.preventDefault();
                     
                     const formData = {
+                        user_id: currentUser?.id || DEMO_USER_ID,
                         name: document.getElementById('apartmentName').value,
                         address: document.getElementById('apartmentAddress').value,
                         daily_price: parseFloat(document.getElementById('apartmentPrice').value),
@@ -2089,6 +2096,7 @@
                             name
                         )
                     `)
+                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -2168,7 +2176,8 @@
             try {
                 const { data: apartments } = await supabase
                     .from('apartments')
-                    .select('id, name, daily_price');
+                    .select('id, name, daily_price')
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID);
 
                 if (apartments) {
                     const options = apartments.map(apt => 
@@ -2267,7 +2276,8 @@
                         end_date: document.getElementById('bookingEndDate').value,
                         total_price: parseFloat(document.getElementById('bookingTotalPrice').value),
                         status: document.getElementById('bookingStatus').value,
-                        notes: document.getElementById('bookingNotes').value
+                        notes: document.getElementById('bookingNotes').value,
+                        created_by: currentUser?.id || DEMO_USER_ID
                     };
 
                     try {

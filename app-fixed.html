@@ -1867,7 +1867,7 @@
                                 
                                 <div class="apartment-card-address">
                                     <i class="bi bi-geo-alt"></i>
-                                    ${apartment.location}
+                                    ${apartment.address}
                                 </div>
                                 
                                 ${apartment.description ? `
@@ -1896,7 +1896,7 @@
                 apartmentsTableBody.innerHTML = apartments.map(apartment => `
                     <tr>
                         <td><strong>${apartment.name}</strong></td>
-                        <td>${apartment.location}</td>
+                        <td>${apartment.address}</td>
                         <td>${parseFloat(apartment.daily_price).toLocaleString()} د.ج</td>
                         <td>${apartment.rooms || 2}</td>
                         <td>${apartment.bathrooms || 1}</td>
@@ -2010,7 +2010,7 @@
                     const formData = {
                         user_id: currentUser?.id || DEMO_USER_ID,
                         name: document.getElementById('apartmentName').value,
-                        location: document.getElementById('apartmentAddress').value,
+                        address: document.getElementById('apartmentAddress').value,
                         daily_price: parseFloat(document.getElementById('apartmentPrice').value),
                         rooms: parseInt(document.getElementById('apartmentRooms').value) || 2,
                         bathrooms: parseInt(document.getElementById('apartmentBathrooms').value) || 1,
@@ -2018,7 +2018,7 @@
                     };
 
                     // Validate required fields
-                    if (!formData.name || !formData.location || !formData.daily_price) {
+                    if (!formData.name || !formData.address || !formData.daily_price) {
                         showMessage('يرجى ملء جميع الحقول المطلوبة', 'error');
                         return;
                     }
@@ -2064,7 +2064,7 @@
                 // Fill edit form
                 document.getElementById('editApartmentId').value = apartment.id;
                 document.getElementById('editApartmentName').value = apartment.name;
-                document.getElementById('editApartmentAddress').value = apartment.location;
+                document.getElementById('editApartmentAddress').value = apartment.address;
                 document.getElementById('editApartmentPrice').value = apartment.daily_price;
                 document.getElementById('editApartmentRooms').value = apartment.rooms || 2;
                 document.getElementById('editApartmentBathrooms').value = apartment.bathrooms || 1;
@@ -2097,7 +2097,7 @@
                     const apartmentId = document.getElementById('editApartmentId').value;
                     const formData = {
                         name: document.getElementById('editApartmentName').value,
-                        location: document.getElementById('editApartmentAddress').value,
+                        address: document.getElementById('editApartmentAddress').value,
                         daily_price: parseFloat(document.getElementById('editApartmentPrice').value),
                         rooms: parseInt(document.getElementById('editApartmentRooms').value) || 2,
                         bathrooms: parseInt(document.getElementById('editApartmentBathrooms').value) || 1,
@@ -2523,7 +2523,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة الواحة الفاخرة',
-                            location: 'حي السلام، شارع الاستقلال رقم 15، الجزائر العاصمة',
+                            address: 'حي السلام، شارع الاستقلال رقم 15، الجزائر العاصمة',
                             daily_price: 3500.00,
                             rooms: 3,
                             bathrooms: 2,
@@ -2532,7 +2532,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة النخيل العصرية',
-                            location: 'حي الرياض، مجمع النخيل السكني، الطابق الخامس',
+                            address: 'حي الرياض، مجمع النخيل السكني، الطابق الخامس',
                             daily_price: 4200.00,
                             rooms: 4,
                             bathrooms: 3,
@@ -2541,7 +2541,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'استوديو الزهور المريح',
-                            location: 'وسط المدينة، قريب من المحلات والمطاعم',
+                            address: 'وسط المدينة، قريب من المحلات والمطاعم',
                             daily_price: 2800.00,
                             rooms: 1,
                             bathrooms: 1,
@@ -2550,7 +2550,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة الياسمين الهادئة',
-                            location: 'حي الأندلس، منطقة هادئة ومناسبة للعائلات',
+                            address: 'حي الأندلس، منطقة هادئة ومناسبة للعائلات',
                             daily_price: 3800.00,
                             rooms: 3,
                             bathrooms: 2,
@@ -2559,7 +2559,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'بنتهاوس الأرز الفخم',
-                            location: 'أعلى برج الأرز، الطابق الأخير مع تراس',
+                            address: 'أعلى برج الأرز، الطابق الأخير مع تراس',
                             daily_price: 6500.00,
                             rooms: 5,
                             bathrooms: 4,

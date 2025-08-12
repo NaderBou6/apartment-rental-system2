@@ -2016,6 +2016,17 @@
                         description: document.getElementById('apartmentDescription').value
                     };
 
+                    // Validate required fields
+                    if (!formData.name || !formData.address || !formData.daily_price) {
+                        showMessage('يرجى ملء جميع الحقول المطلوبة', 'error');
+                        return;
+                    }
+                    
+                    if (formData.daily_price <= 0) {
+                        showMessage('السعر اليومي يجب أن يكون أكبر من صفر', 'error');
+                        return;
+                    }
+
                     try {
                         const { data, error } = await supabase
                             .from('apartments')
@@ -2027,6 +2038,8 @@
                         hideAddApartmentForm();
                         loadApartments();
                         loadDashboardData();
+                        loadApartmentsForFilters();
+                        loadApartmentsForBookings();
 
                     } catch (error) {
                         console.error('Error adding apartment:', error);
@@ -2102,6 +2115,8 @@
                         hideEditApartmentForm();
                         loadApartments();
                         loadDashboardData();
+                        loadApartmentsForFilters();
+                        loadApartmentsForBookings();
 
                     } catch (error) {
                         console.error('Error updating apartment:', error);
@@ -2128,6 +2143,10 @@
                 showMessage('تم حذف الشقة بنجاح!', 'success');
                 loadApartments();
                 loadDashboardData();
+                loadApartmentsForFilters();
+                loadApartmentsForBookings();
+                loadBookings();
+                loadCalendar();
 
             } catch (error) {
                 console.error('Error deleting apartment:', error);
@@ -2445,6 +2464,7 @@
                         hideEditBookingForm();
                         loadBookings();
                         loadDashboardData();
+                        loadCalendar();
 
                     } catch (error) {
                         console.error('Error updating booking:', error);
@@ -2471,6 +2491,7 @@
                 showMessage('تم حذف الحجز بنجاح!', 'success');
                 loadBookings();
                 loadDashboardData();
+                loadCalendar();
 
             } catch (error) {
                 console.error('Error deleting booking:', error);

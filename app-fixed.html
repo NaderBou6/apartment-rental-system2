@@ -1025,6 +1025,9 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpva21icnZoeWh4dHdoZGZybnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NjY1NDQsImV4cCI6MjA3MDQ0MjU0NH0.UVcH2B2qjJelVUkG9DnaCFcrPb7MMepHMY0zu34l1kU';
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Demo user ID for testing (matches the one in instant_fix.sql)
+        const DEMO_USER_ID = '12345678-1234-1234-1234-123456789012';
 
         // Global variables
         let currentUser = null;
@@ -2406,11 +2409,12 @@
 
                 console.log('Inserting demo data...');
 
-                // Insert demo apartments
+                // Insert demo apartments with fixed user ID
                 const { data: apartments, error: apartmentsError } = await supabase
                     .from('apartments')
                     .insert([
                         {
+                            user_id: DEMO_USER_ID,
                             name: 'شقة الواحة الفاخرة',
                             address: 'حي السلام، شارع الاستقلال رقم 15، الجزائر العاصمة',
                             daily_price: 3500.00,
@@ -2419,6 +2423,7 @@
                             description: 'شقة فاخرة مفروشة بالكامل مع إطلالة رائعة على البحر. تحتوي على غرفة معيشة واسعة، مطبخ مجهز، وشرفة كبيرة.'
                         },
                         {
+                            user_id: DEMO_USER_ID,
                             name: 'شقة النخيل العصرية',
                             address: 'حي الرياض، مجمع النخيل السكني، الطابق الخامس',
                             daily_price: 4200.00,
@@ -2427,6 +2432,7 @@
                             description: 'شقة عصرية في مجمع راقي مع جميع وسائل الراحة. تشمل مسبح مشترك، صالة رياضية، وموقف سيارات.'
                         },
                         {
+                            user_id: DEMO_USER_ID,
                             name: 'استوديو الزهور المريح',
                             address: 'وسط المدينة، قريب من المحلات والمطاعم',
                             daily_price: 2800.00,
@@ -2435,6 +2441,7 @@
                             description: 'استوديو مريح ومناسب للأفراد أو الأزواج. موقع ممتاز في وسط المدينة مع سهولة الوصول لجميع الخدمات.'
                         },
                         {
+                            user_id: DEMO_USER_ID,
                             name: 'شقة الياسمين الهادئة',
                             address: 'حي الأندلس، منطقة هادئة ومناسبة للعائلات',
                             daily_price: 3800.00,
@@ -2443,6 +2450,7 @@
                             description: 'شقة هادئة في منطقة سكنية راقية. مناسبة للعائلات مع حديقة صغيرة ومنطقة لعب للأطفال.'
                         },
                         {
+                            user_id: DEMO_USER_ID,
                             name: 'بنتهاوس الأرز الفخم',
                             address: 'أعلى برج الأرز، الطابق الأخير مع تراس',
                             daily_price: 6500.00,
@@ -2472,7 +2480,8 @@
                                 guest_email: 'ahmed.mohamed@email.com',
                                 total_price: 17500.00,
                                 status: 'confirmed',
-                                notes: 'وصول متأخر - بعد الساعة 10 مساءً'
+                                notes: 'وصول متأخر - بعد الساعة 10 مساءً',
+                                created_by: DEMO_USER_ID
                             },
                             {
                                 apartment_id: apartments[1].id,
@@ -2483,7 +2492,8 @@
                                 guest_email: 'fatima.zahra@email.com',
                                 total_price: 25200.00,
                                 status: 'confirmed',
-                                notes: 'عائلة مع طفلين - تحتاج سرير إضافي'
+                                notes: 'عائلة مع طفلين - تحتاج سرير إضافي',
+                                created_by: DEMO_USER_ID
                             },
                             {
                                 apartment_id: apartments[2].id,
@@ -2494,7 +2504,8 @@
                                 guest_email: 'youssef.amine@email.com',
                                 total_price: 8400.00,
                                 status: 'pending',
-                                notes: 'في انتظار تأكيد الدفع'
+                                notes: 'في انتظار تأكيد الدفع',
+                                created_by: DEMO_USER_ID
                             },
                             {
                                 apartment_id: apartments[3].id,
@@ -2505,7 +2516,8 @@
                                 guest_email: 'mariam.saida@email.com',
                                 total_price: 19000.00,
                                 status: 'confirmed',
-                                notes: 'حجز لقضاء رأس السنة مع العائلة'
+                                notes: 'حجز لقضاء رأس السنة مع العائلة',
+                                created_by: DEMO_USER_ID
                             },
                             {
                                 apartment_id: apartments[4].id,
@@ -2516,7 +2528,8 @@
                                 guest_email: 'abderrahman.karim@email.com',
                                 total_price: 32500.00,
                                 status: 'confirmed',
-                                notes: 'حجز VIP - خدمات إضافية مطلوبة'
+                                notes: 'حجز VIP - خدمات إضافية مطلوبة',
+                                created_by: DEMO_USER_ID
                             }
                         ]);
 

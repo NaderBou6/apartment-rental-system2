@@ -1027,7 +1027,7 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
         // Demo user ID for testing (matches the one in instant_fix.sql)
-        const DEMO_USER_ID = '12345678-1234-1234-1234-123456789012';
+        const DEMO_USER_ID = '1a4278e3-41eb-4e36-9f39-393cd6a2f24e';
 
         // Global variables
         let currentUser = null;
@@ -1080,6 +1080,7 @@
                 hideAllForms();
             }
         });
+        
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
 
@@ -2350,10 +2351,12 @@
                         apartment_id: parseInt(document.getElementById('bookingApartment').value),
                         guest_name: document.getElementById('bookingGuestName').value,
                         guest_phone: document.getElementById('bookingGuestPhone').value,
+                        guest_email: document.getElementById('bookingGuestEmail').value,
                         start_date: document.getElementById('bookingStartDate').value,
                         end_date: document.getElementById('bookingEndDate').value,
                         total_price: parseFloat(document.getElementById('bookingTotalPrice').value),
                         status: document.getElementById('bookingStatus').value,
+                        notes: document.getElementById('bookingNotes').value,
                         created_by: currentUser?.id || DEMO_USER_ID
                     };
 
@@ -2405,7 +2408,7 @@
                 document.getElementById('editBookingId').value = booking.id;
                 document.getElementById('editBookingApartment').value = booking.apartment_id;
                 document.getElementById('editBookingGuestName').value = booking.guest_name;
-                document.getElementById('editBookingGuestPhone').value = booking.guest_phone;
+                document.getElementById('editBookingGuestPhone').value = booking.guest_phone || '';
                 document.getElementById('editBookingGuestEmail').value = booking.guest_email || '';
                 document.getElementById('editBookingStartDate').value = booking.start_date;
                 document.getElementById('editBookingEndDate').value = booking.end_date;
@@ -2442,10 +2445,12 @@
                         apartment_id: parseInt(document.getElementById('editBookingApartment').value),
                         guest_name: document.getElementById('editBookingGuestName').value,
                         guest_phone: document.getElementById('editBookingGuestPhone').value,
+                        guest_email: document.getElementById('editBookingGuestEmail').value,
                         start_date: document.getElementById('editBookingStartDate').value,
                         end_date: document.getElementById('editBookingEndDate').value,
                         total_price: parseFloat(document.getElementById('editBookingTotalPrice').value),
-                        status: document.getElementById('editBookingStatus').value
+                        status: document.getElementById('editBookingStatus').value,
+                        notes: document.getElementById('editBookingNotes').value
                     };
 
                     try {
@@ -2518,7 +2523,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة الواحة الفاخرة',
-                            address: 'حي السلام، شارع الاستقلال رقم 15، الجزائر العاصمة',
+                            location: 'حي السلام، شارع الاستقلال رقم 15، الجزائر العاصمة',
                             daily_price: 3500.00,
                             rooms: 3,
                             bathrooms: 2,
@@ -2527,7 +2532,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة النخيل العصرية',
-                            address: 'حي الرياض، مجمع النخيل السكني، الطابق الخامس',
+                            location: 'حي الرياض، مجمع النخيل السكني، الطابق الخامس',
                             daily_price: 4200.00,
                             rooms: 4,
                             bathrooms: 3,
@@ -2536,7 +2541,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'استوديو الزهور المريح',
-                            address: 'وسط المدينة، قريب من المحلات والمطاعم',
+                            location: 'وسط المدينة، قريب من المحلات والمطاعم',
                             daily_price: 2800.00,
                             rooms: 1,
                             bathrooms: 1,
@@ -2545,7 +2550,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'شقة الياسمين الهادئة',
-                            address: 'حي الأندلس، منطقة هادئة ومناسبة للعائلات',
+                            location: 'حي الأندلس، منطقة هادئة ومناسبة للعائلات',
                             daily_price: 3800.00,
                             rooms: 3,
                             bathrooms: 2,
@@ -2554,7 +2559,7 @@
                         {
                             user_id: DEMO_USER_ID,
                             name: 'بنتهاوس الأرز الفخم',
-                            address: 'أعلى برج الأرز، الطابق الأخير مع تراس',
+                            location: 'أعلى برج الأرز، الطابق الأخير مع تراس',
                             daily_price: 6500.00,
                             rooms: 5,
                             bathrooms: 4,

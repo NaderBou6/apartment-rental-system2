@@ -573,9 +573,9 @@
                     
                     <div class="col-md-4">
                         <!-- Add Apartment Form -->
-                        <div class="card" id="addApartmentCard" style="display: none;">
-                            <div class="card-header">
-                                <h6><i class="bi bi-plus-circle"></i> إضافة شقة جديدة</h6>
+                        <div class="card" id="addApartmentCard" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-plus-circle"></i> إضافة شقة جديدة</h6>
                             </div>
                             <div class="card-body">
                                 <form id="addApartmentForm">
@@ -618,9 +618,9 @@
                         </div>
                         
                         <!-- Edit Apartment Form -->
-                        <div class="card" id="editApartmentCard" style="display: none;">
-                            <div class="card-header">
-                                <h6><i class="bi bi-pencil"></i> تعديل الشقة</h6>
+                        <div class="card" id="editApartmentCard" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-pencil"></i> تعديل الشقة</h6>
                             </div>
                             <div class="card-body">
                                 <form id="editApartmentForm">
@@ -709,9 +709,9 @@
                     
                     <div class="col-md-4">
                         <!-- Add Booking Form -->
-                        <div class="card" id="addBookingCard" style="display: none;">
-                            <div class="card-header">
-                                <h6><i class="bi bi-plus-circle"></i> إضافة حجز جديد</h6>
+                        <div class="card" id="addBookingCard" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="bi bi-plus-circle"></i> إضافة حجز جديد</h6>
                             </div>
                             <div class="card-body">
                                 <form id="addBookingForm">
@@ -771,9 +771,9 @@
                         </div>
                         
                         <!-- Edit Booking Form -->
-                        <div class="card" id="editBookingCard" style="display: none;">
-                            <div class="card-header">
-                                <h6><i class="bi bi-pencil"></i> تعديل الحجز</h6>
+                        <div class="card" id="editBookingCard" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-pencil"></i> تعديل الحجز</h6>
                             </div>
                             <div class="card-body">
                                 <form id="editBookingForm">
@@ -1031,6 +1031,55 @@
 
         // Global variables
         let currentUser = null;
+        
+        // Create backdrop for modals
+        function createBackdrop() {
+            // Remove existing backdrop if any
+            removeBackdrop();
+            
+            const backdrop = document.createElement('div');
+            backdrop.id = 'modal-backdrop';
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                backdrop-filter: blur(2px);
+            `;
+            
+            // Close modal when clicking backdrop
+            backdrop.addEventListener('click', function() {
+                hideAllForms();
+            });
+            
+            document.body.appendChild(backdrop);
+        }
+        
+        // Remove backdrop
+        function removeBackdrop() {
+            const backdrop = document.getElementById('modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
+        
+        // Hide all forms
+        function hideAllForms() {
+            hideAddApartmentForm();
+            hideEditApartmentForm();
+            hideAddBookingForm();
+            hideEditBookingForm();
+        }
+        
+        // Add keyboard support (ESC to close)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideAllForms();
+            }
+        });
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
 
@@ -1937,6 +1986,8 @@
 
         // Show add apartment form
         function showAddApartmentForm() {
+            // Create backdrop
+            createBackdrop();
             document.getElementById('addApartmentCard').style.display = 'block';
             document.getElementById('editApartmentCard').style.display = 'none';
             document.getElementById('addApartmentForm').reset();
@@ -1945,6 +1996,7 @@
         // Hide add apartment form
         function hideAddApartmentForm() {
             document.getElementById('addApartmentCard').style.display = 'none';
+            removeBackdrop();
         }
 
         // Add apartment form submission
@@ -2005,6 +2057,7 @@
                 document.getElementById('editApartmentDescription').value = apartment.description || '';
 
                 // Show edit form
+                createBackdrop();
                 document.getElementById('editApartmentCard').style.display = 'block';
                 document.getElementById('addApartmentCard').style.display = 'none';
 
@@ -2017,6 +2070,7 @@
         // Hide edit apartment form
         function hideEditApartmentForm() {
             document.getElementById('editApartmentCard').style.display = 'none';
+            removeBackdrop();
         }
 
         // Edit apartment form submission
@@ -2194,9 +2248,14 @@
 
         // Show add booking form
         function showAddBookingForm() {
+            // Create backdrop
+            createBackdrop();
             document.getElementById('addBookingCard').style.display = 'block';
             document.getElementById('editBookingCard').style.display = 'none';
             document.getElementById('addBookingForm').reset();
+            
+            // Load apartments for booking
+            loadApartmentsForBookings();
             
             // Set default dates
             const today = new Date();
@@ -2210,6 +2269,7 @@
         // Hide add booking form
         function hideAddBookingForm() {
             document.getElementById('addBookingCard').style.display = 'none';
+            removeBackdrop();
         }
 
         // Calculate booking price
@@ -2280,6 +2340,18 @@
                         created_by: currentUser?.id || DEMO_USER_ID
                     };
 
+                    // Validate apartment selection
+                    if (!formData.apartment_id) {
+                        showMessage('يرجى اختيار الشقة أولاً', 'error');
+                        return;
+                    }
+                    
+                    // Validate dates
+                    if (new Date(formData.start_date) >= new Date(formData.end_date)) {
+                        showMessage('تاريخ المغادرة يجب أن يكون بعد تاريخ الوصول', 'error');
+                        return;
+                    }
+
                     try {
                         const { data, error } = await supabase
                             .from('bookings')
@@ -2291,6 +2363,7 @@
                         hideAddBookingForm();
                         loadBookings();
                         loadDashboardData();
+                        loadCalendar();
 
                     } catch (error) {
                         console.error('Error adding booking:', error);
@@ -2324,6 +2397,7 @@
                 document.getElementById('editBookingNotes').value = booking.notes || '';
 
                 // Show edit form
+                createBackdrop();
                 document.getElementById('editBookingCard').style.display = 'block';
                 document.getElementById('addBookingCard').style.display = 'none';
 
@@ -2336,6 +2410,7 @@
         // Hide edit booking form
         function hideEditBookingForm() {
             document.getElementById('editBookingCard').style.display = 'none';
+            removeBackdrop();
         }
 
         // Edit booking form submission

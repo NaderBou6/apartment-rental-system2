@@ -2223,6 +2223,8 @@
             const bookingsTableBody = document.getElementById('bookingsTableBody');
             
             try {
+                console.log('Loading bookings for user:', currentUser?.id || DEMO_USER_ID);
+                
                 const { data: bookings, error } = await supabase
                     .from('bookings')
                     .select(`
@@ -2233,6 +2235,8 @@
                     `)
                     .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .order('created_at', { ascending: false });
+                
+                console.log('Bookings query result:', { bookings, error });
 
                 if (error) throw error;
 
@@ -2309,18 +2313,34 @@
         // Load apartments for bookings
         async function loadApartmentsForBookings() {
             try {
-                const { data: apartments } = await supabase
+                console.log('Loading apartments for bookings...');
+                console.log('Current user ID:', currentUser?.id || DEMO_USER_ID);
+                
+                const { data: apartments, error } = await supabase
                     .from('apartments')
                     .select('id, name, daily_price')
                     .eq('user_id', currentUser?.id || DEMO_USER_ID);
+                
+                if (error) {
+                    console.error('Error loading apartments:', error);
+                    return;
+                }
 
-                if (apartments) {
+                console.log('Apartments loaded:', apartments);
+                
+                if (apartments && apartments.length > 0) {
                     const options = apartments.map(apt => 
                         `<option value="${apt.id}" data-price="${apt.daily_price}">${apt.name}</option>`
                     ).join('');
                     
                     document.getElementById('bookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
                     document.getElementById('editBookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
+                    
+                    console.log('Apartments options updated');
+                } else {
+                    console.log('No apartments found for user');
+                    document.getElementById('bookingApartment').innerHTML = '<option value="">لا توجد شقق متاحة</option>';
+                    document.getElementById('editBookingApartment').innerHTML = '<option value="">لا توجد شقق متاحة</option>';
                 }
             } catch (error) {
                 console.log('Error loading apartments for bookings:', error);
@@ -2409,7 +2429,7 @@
                     e.preventDefault();
                     
                     const formData = {
-                        apartment_id: parseInt(document.getElementById('bookingApartment').value),
+                        apartment_id: document.getElementById('bookingApartment').value,
                         guest_name: document.getElementById('bookingGuestName').value,
                         guest_phone: document.getElementById('bookingGuestPhone').value,
                         guest_email: document.getElementById('bookingGuestEmail').value,
@@ -2434,6 +2454,10 @@
                     }
 
                     try {
+                        console.log('Attempting to insert booking:', formData);
+                        console.log('Apartment ID type:', typeof formData.apartment_id);
+                        console.log('Apartment ID value:', formData.apartment_id);
+                        
                         const { data, error } = await supabase
                             .from('bookings')
                             .insert([formData]);
@@ -2519,7 +2543,7 @@
                     
                     const bookingId = document.getElementById('editBookingId').value;
                     const formData = {
-                        apartment_id: parseInt(document.getElementById('editBookingApartment').value),
+                        apartment_id: document.getElementById('editBookingApartment').value,
                         guest_name: document.getElementById('editBookingGuestName').value,
                         guest_phone: document.getElementById('editBookingGuestPhone').value,
                         guest_email: document.getElementById('editBookingGuestEmail').value,

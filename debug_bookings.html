@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص مشكلة الحجوزات</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 تشخيص مشكلة الحجوزات</h1>
+    
+    <div>
+        <h2>1. فحص المستخدم الحالي</h2>
+        <button onclick="checkCurrentUser()">فحص المستخدم</button>
+        <div id="userResult"></div>
+    </div>
+
+    <div>
+        <h2>2. فحص الشقق المتاحة</h2>
+        <button onclick="checkApartments()">فحص الشقق</button>
+        <div id="apartmentsResult"></div>
+    </div>
+
+    <div>
+        <h2>3. فحص الحجوزات الموجودة</h2>
+        <button onclick="checkBookings()">فحص الحجوزات</button>
+        <div id="bookingsResult"></div>
+    </div>
+
+    <div>
+        <h2>4. محاولة إضافة حجز</h2>
+        <button onclick="testAddBooking()">اختبار إضافة حجز</button>
+        <div id="addBookingResult"></div>
+    </div>
+
+    <div>
+        <h2>5. فحص عناصر HTML</h2>
+        <button onclick="checkHTMLElements()">فحص العناصر</button>
+        <div id="htmlResult"></div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'https://zokmbrvhyhxtwhdfrnwt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpva21icnZoeWh4dHdoZGZybnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NjY1NDQsImV4cCI6MjA3MDQ0MjU0NH0.UVcH2B2qjJelVUkG9DnaCFcrPb7MMepHMY0zu34l1kU';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const DEMO_USER_ID = '1a4278e3-41eb-4e36-9f39-393cd6a2f24e';
+
+        // Simulate the same currentUser logic as in app-fixed.html
+        let currentUser = null;
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = 'result ' + type;
+        }
+
+        async function checkCurrentUser() {
+            try {
+                // Check if there's a logged in user
+                const { data: { user } } = await supabase.auth.getUser();
+                currentUser = user;
+                
+                const result = `
+                    <h4>معلومات المستخدم:</h4>
+                    <pre>${JSON.stringify({
+                        'مستخدم مسجل': user ? 'نعم' : 'لا',
+                        'ID المستخدم': user?.id || 'غير موجود',
+                        'DEMO_USER_ID': DEMO_USER_ID,
+                        'المستخدم المستخدم': user?.id || DEMO_USER_ID
+                    }, null, 2)}</pre>
+                `;
+                
+                showResult('userResult', result, 'info');
+            } catch (error) {
+                showResult('userResult', 'خطأ في فحص المستخدم: ' + error.message, 'error');
+            }
+        }
+
+        async function checkApartments() {
+            try {
+                const userId = currentUser?.id || DEMO_USER_ID;
+                
+                // Check apartments for this user
+                const { data: apartments, error } = await supabase
+                    .from('apartments')
+                    .select('id, name, daily_price, user_id')
+                    .eq('user_id', userId);
+
+                if (error) throw error;
+
+                const result = `
+                    <h4>الشقق للمستخدم ${userId}:</h4>
+                    <pre>${JSON.stringify(apartments, null, 2)}</pre>
+                    <p><strong>العدد:</strong> ${apartments?.length || 0}</p>
+                `;
+                
+                showResult('apartmentsResult', result, apartments?.length > 0 ? 'success' : 'error');
+            } catch (error) {
+                showResult('apartmentsResult', 'خطأ في فحص الشقق: ' + error.message, 'error');
+            }
+        }
+
+        async function checkBookings() {
+            try {
+                const userId = currentUser?.id || DEMO_USER_ID;
+                
+                // Check bookings for this user
+                const { data: bookings, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        apartments (
+                            name
+                        )
+                    `)
+                    .eq('created_by', userId);
+
+                if (error) throw error;
+
+                const result = `
+                    <h4>الحجوزات للمستخدم ${userId}:</h4>
+                    <pre>${JSON.stringify(bookings, null, 2)}</pre>
+                    <p><strong>العدد:</strong> ${bookings?.length || 0}</p>
+                `;
+                
+                showResult('bookingsResult', result, bookings?.length > 0 ? 'success' : 'info');
+            } catch (error) {
+                showResult('bookingsResult', 'خطأ في فحص الحجوزات: ' + error.message, 'error');
+            }
+        }
+
+        async function testAddBooking() {
+            try {
+                const userId = currentUser?.id || DEMO_USER_ID;
+                
+                // First get an apartment
+                const { data: apartments } = await supabase
+                    .from('apartments')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .limit(1);
+
+                if (!apartments || apartments.length === 0) {
+                    showResult('addBookingResult', 'لا توجد شقق للمستخدم - لا يمكن إضافة حجز', 'error');
+                    return;
+                }
+
+                const testBooking = {
+                    apartment_id: apartments[0].id,
+                    guest_name: 'نزيل تجريبي',
+                    guest_phone: '+213555123456',
+                    guest_email: 'test@example.com',
+                    start_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+                    end_date: new Date(Date.now() + 259200000).toISOString().split('T')[0], // day after tomorrow
+                    total_price: 7000,
+                    status: 'confirmed',
+                    notes: 'حجز تجريبي للتشخيص',
+                    created_by: userId
+                };
+
+                console.log('Test booking data:', testBooking);
+
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .insert([testBooking])
+                    .select();
+
+                if (error) throw error;
+
+                const result = `
+                    <h4>نجح إضافة الحجز التجريبي!</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                showResult('addBookingResult', result, 'success');
+            } catch (error) {
+                const result = `
+                    <h4>فشل إضافة الحجز التجريبي:</h4>
+                    <p><strong>الرسالة:</strong> ${error.message}</p>
+                    <p><strong>التفاصيل:</strong> ${error.details || 'لا توجد'}</p>
+                    <p><strong>الاقتراح:</strong> ${error.hint || 'لا يوجد'}</p>
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `;
+                showResult('addBookingResult', result, 'error');
+            }
+        }
+
+        async function checkHTMLElements() {
+            // This would only work if we're in the context of app-fixed.html
+            const elements = [
+                'bookingApartment',
+                'bookingGuestName',
+                'bookingGuestPhone',
+                'bookingGuestEmail',
+                'bookingStartDate',
+                'bookingEndDate',
+                'bookingTotalPrice',
+                'bookingStatus',
+                'bookingNotes'
+            ];
+
+            let result = '<h4>فحص عناصر HTML:</h4>';
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                result += `<p><strong>${id}:</strong> ${element ? 'موجود' : 'غير موجود'}</p>`;
+            });
+
+            showResult('htmlResult', result, 'info');
+        }
+
+        // Auto-run checks on page load
+        window.onload = async function() {
+            await checkCurrentUser();
+            await checkApartments();
+            await checkBookings();
+        };
+    </script>
+</body>
+</html>

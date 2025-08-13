@@ -964,10 +964,22 @@
                                         <label for="bookingEndDate" class="form-label">تاريخ المغادرة</label>
                                         <input type="date" class="form-control" id="bookingEndDate" required>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="bookingNights" class="form-label">عدد الليالي</label>
+                                            <input type="number" class="form-control" id="bookingNights" readonly>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="bookingDailyPrice" class="form-label">السعر اليومي (د.ج)</label>
+                                            <input type="number" class="form-control" id="bookingDailyPrice" step="0.01">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="bookingTotalPrice" class="form-label">المبلغ الإجمالي (د.ج)</label>
+                                            <input type="number" class="form-control" id="bookingTotalPrice" step="0.01">
+                                        </div>
+                                    </div>
                                     <div class="mb-3">
-                                        <label for="bookingTotalPrice" class="form-label">المبلغ الإجمالي (د.ج)</label>
-                                        <input type="number" class="form-control" id="bookingTotalPrice" readonly>
-                                        <small class="form-text text-muted">سيتم حساب المبلغ تلقائياً</small>
+                                        <div id="priceBreakdown"></div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="bookingStatus" class="form-label">حالة الحجز</label>

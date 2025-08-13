@@ -1722,7 +1722,15 @@
                 ];
                 const currentMonthYear = document.getElementById('currentMonthYear');
                 if (currentMonthYear) {
-                    currentMonthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                    const selectedApartment = document.getElementById('calendarApartment');
+                    const apartmentName = selectedApartment?.selectedOptions[0]?.text || '';
+                    
+                    let displayText = `${monthNames[currentMonth]} ${currentYear}`;
+                    if (selectedApartment?.value && apartmentName !== 'جميع الشقق') {
+                        displayText += ` - ${apartmentName}`;
+                    }
+                    
+                    currentMonthYear.textContent = displayText;
                 }
                 
             } catch (error) {
@@ -1750,11 +1758,11 @@
             try {
                 let bookingsQuery = supabase
                     .from('bookings')
-                    .select('start_date, end_date, apartment_id')
-                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
+                    .select('check_in_date, check_out_date, apartment_id, guest_name')
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID)
                     .neq('status', 'cancelled')
-                    .lte('start_date', endDate)
-                    .gte('end_date', startDate);
+                    .lte('check_in_date', endDate)
+                    .gte('check_out_date', startDate);
 
                 if (selectedApartment) {
                     bookingsQuery = bookingsQuery.eq('apartment_id', selectedApartment);
@@ -1764,8 +1772,8 @@
 
                 if (bookings) {
                     bookings.forEach(booking => {
-                        const start = new Date(booking.start_date);
-                        const end = new Date(booking.end_date);
+                        const start = new Date(booking.check_in_date);
+                        const end = new Date(booking.check_out_date);
                         
                         for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
                             if (d.getMonth() === month && d.getFullYear() === year) {
@@ -3406,6 +3414,27 @@
             }
         }
 
+        // Initialize enhanced features
+        function initializeEnhancedFeatures() {
+            // Load apartments for all filters and selectors
+            loadApartmentsForFilters();
+            
+            // Setup booking form listeners
+            setTimeout(() => {
+                setupBookingFormListeners();
+            }, 500);
+            
+            // Initialize calendar with apartment filtering
+            setTimeout(() => {
+                loadCalendar();
+            }, 1000);
+            
+            console.log('✅ تم تفعيل الميزات المحسنة:');
+            console.log('📋 تصفية الحجوزات حسب الشقة');
+            console.log('📅 تقويم مخصص لكل شقة');
+            console.log('💰 تعديل الأسعار عند الحجز');
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             // Check if user is already logged in
@@ -3414,12 +3443,14 @@
                 showDashboard(session.user);
                 // Try to insert demo data if needed
                 setTimeout(() => insertDemoDataAfterLogin(), 2000);
+                // Initialize enhanced features
+                setTimeout(() => initializeEnhancedFeatures(), 3000);
             }
             
             // Initialize mobile controls sync
             setTimeout(() => syncMobileControls(), 1000);
             
-            console.log('تطبيق إدارة الشقق المحسن جاهز للعمل!');
+            console.log('🚀 تطبيق إدارة الشقق المحسن جاهز للعمل!');
         });
     </script>
 </body>

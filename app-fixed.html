@@ -2270,10 +2270,10 @@
                             <td>${parseFloat(booking.total_price).toLocaleString()} د.ج</td>
                             <td><span class="badge bg-${statusClass}">${statusText}</span></td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary" onclick="editBooking(${booking.id})">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editBooking('${booking.id}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBooking(${booking.id}, '${booking.guest_name}')">
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBooking('${booking.id}', '${booking.guest_name}')">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -2521,6 +2521,7 @@
 
         // Edit booking
         async function editBooking(bookingId) {
+            console.log('Edit booking called with ID:', bookingId);
             try {
                 const { data: booking, error } = await supabase
                     .from('bookings')
@@ -2542,6 +2543,9 @@
                 document.getElementById('editBookingStatus').value = booking.status;
                 document.getElementById('editBookingNotes').value = booking.notes || '';
 
+                // Load apartments for edit form
+                await loadApartmentsForBookings();
+                
                 // Show edit form
                 createBackdrop();
                 document.getElementById('editBookingCard').style.display = 'block';
@@ -2603,6 +2607,7 @@
 
         // Delete booking
         async function deleteBooking(bookingId, guestName) {
+            console.log('Delete booking called with ID:', bookingId, 'Guest:', guestName);
             if (!confirm(`هل أنت متأكد من حذف حجز "${guestName}"؟`)) {
                 return;
             }

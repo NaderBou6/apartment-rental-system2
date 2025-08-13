@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الحجوزات</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { margin: 5px; padding: 10px; }
+        input, select, textarea { margin: 5px; padding: 5px; width: 200px; }
+        .form-group { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>اختبار الحجوزات</h1>
+    
+    <div>
+        <h2>1. اختبار الاتصال</h2>
+        <button onclick="testConnection()">اختبار الاتصال</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div>
+        <h2>2. تحميل الشقق</h2>
+        <button onclick="loadApartments()">تحميل الشقق</button>
+        <div id="apartmentsResult"></div>
+    </div>
+
+    <div>
+        <h2>3. إضافة حجز</h2>
+        <div class="form-group">
+            <label>الشقة:</label>
+            <select id="bookingApartment">
+                <option value="">اختر الشقة</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>اسم النزيل:</label>
+            <input type="text" id="bookingGuestName" value="أحمد محمد">
+        </div>
+        <div class="form-group">
+            <label>رقم الهاتف:</label>
+            <input type="text" id="bookingGuestPhone" value="+213555123456">
+        </div>
+        <div class="form-group">
+            <label>البريد الإلكتروني:</label>
+            <input type="email" id="bookingGuestEmail" value="ahmed@example.com">
+        </div>
+        <div class="form-group">
+            <label>تاريخ الوصول:</label>
+            <input type="date" id="bookingStartDate">
+        </div>
+        <div class="form-group">
+            <label>تاريخ المغادرة:</label>
+            <input type="date" id="bookingEndDate">
+        </div>
+        <div class="form-group">
+            <label>السعر الإجمالي:</label>
+            <input type="number" id="bookingTotalPrice" value="7000">
+        </div>
+        <div class="form-group">
+            <label>الحالة:</label>
+            <select id="bookingStatus">
+                <option value="confirmed">مؤكد</option>
+                <option value="pending">في الانتظار</option>
+                <option value="cancelled">ملغي</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>ملاحظات:</label>
+            <textarea id="bookingNotes">حجز تجريبي للاختبار</textarea>
+        </div>
+        <button onclick="addBooking()">إضافة حجز</button>
+        <div id="bookingResult"></div>
+    </div>
+
+    <div>
+        <h2>4. عرض الحجوزات</h2>
+        <button onclick="loadBookings()">تحميل الحجوزات</button>
+        <div id="bookingsResult"></div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const supabaseUrl = 'https://zokmbrvhyhxtwhdfrnwt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpva21icnZoeWh4dHdoZGZybnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NjY1NDQsImV4cCI6MjA3MDQ0MjU0NH0.UVcH2B2qjJelVUkG9DnaCFcrPb7MMepHMY0zu34l1kU';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const DEMO_USER_ID = '1a4278e3-41eb-4e36-9f39-393cd6a2f24e';
+
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = 'result ' + (isError ? 'error' : 'success');
+        }
+
+        // Set default dates
+        window.onload = function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(today);
+            dayAfter.setDate(dayAfter.getDate() + 3);
+
+            document.getElementById('bookingStartDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('bookingEndDate').value = dayAfter.toISOString().split('T')[0];
+
+            testConnection();
+            loadApartments();
+        };
+
+        async function testConnection() {
+            try {
+                console.log('Testing bookings table connection...');
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('count', { count: 'exact', head: true });
+
+                if (error) {
+                    console.error('Connection error:', error);
+                    showResult('connectionResult', 'خطأ في الاتصال بجدول الحجوزات: ' + error.message, true);
+                } else {
+                    console.log('Connection successful, count:', data);
+                    showResult('connectionResult', 'الاتصال ناجح! عدد الحجوزات: ' + (data || 0));
+                }
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                showResult('connectionResult', 'فشل اختبار الاتصال: ' + error.message, true);
+            }
+        }
+
+        async function loadApartments() {
+            try {
+                console.log('Loading apartments for booking...');
+                const { data, error } = await supabase
+                    .from('apartments')
+                    .select('id, name, address, daily_price')
+                    .order('name');
+
+                if (error) {
+                    console.error('Load apartments error:', error);
+                    showResult('apartmentsResult', 'خطأ في تحميل الشقق: ' + error.message, true);
+                } else {
+                    console.log('Apartments loaded:', data);
+                    
+                    const select = document.getElementById('bookingApartment');
+                    select.innerHTML = '<option value="">اختر الشقة</option>';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(apartment => {
+                            const option = document.createElement('option');
+                            option.value = apartment.id;
+                            option.textContent = `${apartment.name} - ${apartment.daily_price} د.ج`;
+                            select.appendChild(option);
+                        });
+                        showResult('apartmentsResult', `تم تحميل ${data.length} شقة بنجاح`);
+                    } else {
+                        showResult('apartmentsResult', 'لا توجد شقق متاحة', true);
+                    }
+                }
+            } catch (error) {
+                console.error('Load apartments failed:', error);
+                showResult('apartmentsResult', 'فشل تحميل الشقق: ' + error.message, true);
+            }
+        }
+
+        async function addBooking() {
+            try {
+                const formData = {
+                    apartment_id: document.getElementById('bookingApartment').value,
+                    guest_name: document.getElementById('bookingGuestName').value,
+                    guest_phone: document.getElementById('bookingGuestPhone').value,
+                    guest_email: document.getElementById('bookingGuestEmail').value,
+                    start_date: document.getElementById('bookingStartDate').value,
+                    end_date: document.getElementById('bookingEndDate').value,
+                    total_price: parseFloat(document.getElementById('bookingTotalPrice').value),
+                    status: document.getElementById('bookingStatus').value,
+                    notes: document.getElementById('bookingNotes').value,
+                    created_by: DEMO_USER_ID
+                };
+
+                console.log('Attempting to insert booking:', formData);
+
+                // Validate required fields
+                if (!formData.apartment_id) {
+                    showResult('bookingResult', 'يرجى اختيار الشقة', true);
+                    return;
+                }
+
+                if (!formData.guest_name) {
+                    showResult('bookingResult', 'يرجى إدخال اسم النزيل', true);
+                    return;
+                }
+
+                if (new Date(formData.start_date) >= new Date(formData.end_date)) {
+                    showResult('bookingResult', 'تاريخ المغادرة يجب أن يكون بعد تاريخ الوصول', true);
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .insert([formData])
+                    .select();
+
+                if (error) {
+                    console.error('Insert booking error:', error);
+                    console.error('Error details:', error.details);
+                    console.error('Error hint:', error.hint);
+                    console.error('Error code:', error.code);
+                    
+                    let errorMessage = 'خطأ في إضافة الحجز: ';
+                    if (error.message) {
+                        errorMessage += error.message;
+                    }
+                    if (error.details) {
+                        errorMessage += ' | التفاصيل: ' + error.details;
+                    }
+                    if (error.hint) {
+                        errorMessage += ' | اقتراح: ' + error.hint;
+                    }
+                    
+                    showResult('bookingResult', errorMessage, true);
+                } else {
+                    console.log('Booking inserted successfully:', data);
+                    showResult('bookingResult', 'تم إضافة الحجز بنجاح! ID: ' + data[0].id);
+                    loadBookings(); // Refresh bookings list
+                }
+            } catch (error) {
+                console.error('Add booking failed:', error);
+                showResult('bookingResult', 'فشل إضافة الحجز: ' + error.message, true);
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                console.log('Loading bookings...');
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        apartments (
+                            name,
+                            address
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Load bookings error:', error);
+                    showResult('bookingsResult', 'خطأ في تحميل الحجوزات: ' + error.message, true);
+                } else {
+                    console.log('Bookings loaded:', data);
+                    let html = '<h3>الحجوزات الموجودة:</h3>';
+                    if (data && data.length > 0) {
+                        data.forEach(booking => {
+                            html += `<div style="border: 1px solid #ccc; margin: 5px; padding: 10px;">
+                                <strong>النزيل:</strong> ${booking.guest_name}<br>
+                                <strong>الشقة:</strong> ${booking.apartments?.name || 'غير محدد'}<br>
+                                <strong>الهاتف:</strong> ${booking.guest_phone || 'غير محدد'}<br>
+                                <strong>الإيميل:</strong> ${booking.guest_email || 'غير محدد'}<br>
+                                <strong>من:</strong> ${booking.start_date} <strong>إلى:</strong> ${booking.end_date}<br>
+                                <strong>السعر:</strong> ${booking.total_price} د.ج<br>
+                                <strong>الحالة:</strong> ${booking.status}<br>
+                                <strong>الملاحظات:</strong> ${booking.notes || 'لا توجد'}<br>
+                                <strong>تاريخ الإنشاء:</strong> ${new Date(booking.created_at).toLocaleString('ar')}
+                            </div>`;
+                        });
+                    } else {
+                        html += '<p>لا توجد حجوزات</p>';
+                    }
+                    showResult('bookingsResult', html);
+                }
+            } catch (error) {
+                console.error('Load bookings failed:', error);
+                showResult('bookingsResult', 'فشل تحميل الحجوزات: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

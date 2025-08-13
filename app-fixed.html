@@ -226,6 +226,19 @@
             background: #f8f9fa;
             border: 2px solid #dee2e6;
         }
+        
+        /* Past booked days - red border */
+        .calendar-day.past.booked {
+            background: #f8f9fa !important;
+            border: 3px solid #dc3545 !important;
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+        
+        .legend-past-booked {
+            background: #f8f9fa;
+            border: 3px solid #dc3545;
+        }
 
         /* Apartment Cards Styles */
         .apartment-card {
@@ -869,14 +882,9 @@
                             <!-- Header for Desktop -->
                             <div class="card-header d-none d-md-flex justify-content-between align-items-center">
                                 <h5><i class="bi bi-calendar-check"></i> قائمة الحجوزات</h5>
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-info btn-sm" onclick="showAllBookings()">
-                                        <i class="bi bi-list"></i> جميع الحجوزات
-                                    </button>
-                                    <button class="btn btn-primary btn-sm" onclick="showAddBookingForm()">
-                                        <i class="bi bi-plus"></i> إضافة حجز جديد
-                                    </button>
-                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="showAddBookingForm()">
+                                    <i class="bi bi-plus"></i> إضافة حجز جديد
+                                </button>
                             </div>
                             
                             <!-- Header for Mobile -->
@@ -885,12 +893,7 @@
                                     <div class="col-12">
                                         <h6 class="mb-3"><i class="bi bi-calendar-check"></i> قائمة الحجوزات</h6>
                                     </div>
-                                    <div class="col-6">
-                                        <button class="btn btn-outline-info w-100" onclick="showAllBookings()">
-                                            <i class="bi bi-list"></i> جميع الحجوزات
-                                        </button>
-                                    </div>
-                                    <div class="col-6">
+                                    <div class="col-12">
                                         <button class="btn btn-primary w-100" onclick="showAddBookingForm()">
                                             <i class="bi bi-plus"></i> إضافة حجز جديد
                                         </button>
@@ -961,24 +964,10 @@
                                         <label for="bookingEndDate" class="form-label">تاريخ المغادرة</label>
                                         <input type="date" class="form-control" id="bookingEndDate" required>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="bookingDailyPrice" class="form-label">السعر اليومي (د.ج)</label>
-                                            <input type="number" class="form-control" id="bookingDailyPrice" min="0" step="0.01">
-                                            <small class="form-text text-muted">يمكن تعديل السعر حسب الحاجة</small>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="bookingNights" class="form-label">عدد الليالي</label>
-                                            <input type="number" class="form-control" id="bookingNights" readonly>
-                                        </div>
-                                    </div>
                                     <div class="mb-3">
                                         <label for="bookingTotalPrice" class="form-label">المبلغ الإجمالي (د.ج)</label>
-                                        <input type="number" class="form-control" id="bookingTotalPrice" min="0" step="0.01">
-                                        <div id="priceBreakdown" class="mt-1"></div>
-                                        <small class="form-text text-muted">
-                                            <span class="text-primary">💡 نصيحة:</span> يمكنك تعديل السعر الإجمالي مباشرة أو تعديل السعر اليومي
-                                        </small>
+                                        <input type="number" class="form-control" id="bookingTotalPrice" readonly>
+                                        <small class="form-text text-muted">سيتم حساب المبلغ تلقائياً</small>
                                     </div>
                                     <div class="mb-3">
                                         <label for="bookingStatus" class="form-label">حالة الحجز</label>
@@ -1158,6 +1147,10 @@
                             <div class="legend-item">
                                 <div class="legend-color legend-past"></div>
                                 <span>ماضي</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color legend-past-booked"></div>
+                                <span>ماضي محجوز</span>
                             </div>
                         </div>
                     </div>
@@ -1705,37 +1698,15 @@
         }
 
         // Load calendar
-        async function loadCalendar() {
+        function loadCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             
             try {
-                calendarGrid.innerHTML = '<p class="text-center">جاري تحميل التقويم...</p>';
-                
-                // Use the enhanced calendar with real data
-                const calendar = await generateCalendar(currentYear, currentMonth);
+                // Generate simple calendar for demo
+                const calendar = generateSimpleCalendar(currentYear, currentMonth);
                 calendarGrid.innerHTML = calendar;
-                
-                // Update month display
-                const monthNames = [
-                    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-                    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-                ];
-                const currentMonthYear = document.getElementById('currentMonthYear');
-                if (currentMonthYear) {
-                    const selectedApartment = document.getElementById('calendarApartment');
-                    const apartmentName = selectedApartment?.selectedOptions[0]?.text || '';
-                    
-                    let displayText = `${monthNames[currentMonth]} ${currentYear}`;
-                    if (selectedApartment?.value && apartmentName !== 'جميع الشقق') {
-                        displayText += ` - ${apartmentName}`;
-                    }
-                    
-                    currentMonthYear.textContent = displayText;
-                }
-                
             } catch (error) {
-                console.error('Error loading calendar:', error);
-                calendarGrid.innerHTML = `<p class="text-danger text-center">خطأ في تحميل التقويم</p>`;
+                calendarGrid.innerHTML = `<p class="text-danger">خطأ في تحميل التقويم</p>`;
             }
         }
 
@@ -1758,11 +1729,11 @@
             try {
                 let bookingsQuery = supabase
                     .from('bookings')
-                    .select('check_in_date, check_out_date, apartment_id, guest_name')
-                    .eq('user_id', currentUser?.id || DEMO_USER_ID)
+                    .select('start_date, end_date, apartment_id')
+                    .eq('created_by', currentUser?.id || DEMO_USER_ID)
                     .neq('status', 'cancelled')
-                    .lte('check_in_date', endDate)
-                    .gte('check_out_date', startDate);
+                    .lte('start_date', endDate)
+                    .gte('end_date', startDate);
 
                 if (selectedApartment) {
                     bookingsQuery = bookingsQuery.eq('apartment_id', selectedApartment);
@@ -1772,8 +1743,8 @@
 
                 if (bookings) {
                     bookings.forEach(booking => {
-                        const start = new Date(booking.check_in_date);
-                        const end = new Date(booking.check_out_date);
+                        const start = new Date(booking.start_date);
+                        const end = new Date(booking.end_date);
                         
                         for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
                             if (d.getMonth() === month && d.getFullYear() === year) {
@@ -1814,7 +1785,10 @@
                 let className = 'calendar-day';
                 let title = '';
                 
-                if (isPast) {
+                if (isPast && isBooked) {
+                    className += ' past booked';
+                    title = 'يوم ماضي محجوز';
+                } else if (isPast) {
                     className += ' past';
                     title = 'يوم ماضي';
                 } else if (isBooked) {
@@ -1866,20 +1840,17 @@
                 const { data: apartments } = await supabase
                     .from('apartments')
                     .select('id, name')
-                    .eq('user_id', currentUser?.id || DEMO_USER_ID)
-                    .order('name');
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID);
 
-                if (apartments && apartments.length > 0) {
+                if (apartments) {
                     const calendarSelect = document.getElementById('calendarApartment');
                     const calendarSelectMobile = document.getElementById('calendarApartmentMobile');
                     const statsSelect = document.getElementById('statsApartment');
-                    const bookingApartmentSelect = document.getElementById('bookingApartment');
                     
                     const options = apartments.map(apt => 
                         `<option value="${apt.id}">${apt.name}</option>`
                     ).join('');
                     
-                    // Update all apartment selectors
                     if (calendarSelect) {
                         calendarSelect.innerHTML = '<option value="">جميع الشقق</option>' + options;
                     }
@@ -1891,58 +1862,33 @@
                     if (statsSelect) {
                         statsSelect.innerHTML = '<option value="">جميع الشقق</option>' + options;
                     }
-                    
-                    if (bookingApartmentSelect) {
-                        bookingApartmentSelect.innerHTML = '<option value="">اختر الشقة</option>' + options;
-                    }
-                    
-                    // Add event listeners for calendar filtering
-                    if (calendarSelect) {
-                        calendarSelect.addEventListener('change', loadCalendar);
-                    }
-                    
-                    if (calendarSelectMobile) {
-                        calendarSelectMobile.addEventListener('change', () => {
-                            // Sync with desktop version
-                            if (calendarSelect) {
-                                calendarSelect.value = calendarSelectMobile.value;
-                            }
-                            loadCalendar();
-                        });
-                    }
-                    
                 } else {
-                    // No apartments found - show message
+                    // Use demo data when no apartments found
+                    const demoOptions = `
+                        <option value="demo1">شقة الواحة الفاخرة</option>
+                        <option value="demo2">شقة النخيل العصرية</option>
+                        <option value="demo3">استوديو الزهور المريح</option>
+                        <option value="demo4">شقة الياسمين الهادئة</option>
+                    `;
+                    
                     const calendarSelect = document.getElementById('calendarApartment');
                     const calendarSelectMobile = document.getElementById('calendarApartmentMobile');
+                    const statsSelect = document.getElementById('statsApartment');
                     
                     if (calendarSelect) {
-                        calendarSelect.innerHTML = '<option value="">لا توجد شقق - أضف شقة أولاً</option>';
+                        calendarSelect.innerHTML = '<option value="">جميع الشقق</option>' + demoOptions;
                     }
                     
                     if (calendarSelectMobile) {
-                        calendarSelectMobile.innerHTML = '<option value="">لا توجد شقق - أضف شقة أولاً</option>';
+                        calendarSelectMobile.innerHTML = '<option value="">جميع الشقق</option>' + demoOptions;
+                    }
+                    
+                    if (statsSelect) {
+                        statsSelect.innerHTML = '<option value="">جميع الشقق</option>' + demoOptions;
                     }
                 }
             } catch (error) {
                 console.log('Error loading apartments:', error);
-                // Show demo data for offline mode
-                const demoOptions = `
-                    <option value="demo1">شقة الواحة - غرفة واحدة</option>
-                    <option value="demo2">شقة النخيل - غرفتان</option>
-                    <option value="demo3">شقة الياسمين - ثلاث غرف</option>
-                `;
-                
-                const calendarSelect = document.getElementById('calendarApartment');
-                const calendarSelectMobile = document.getElementById('calendarApartmentMobile');
-                
-                if (calendarSelect) {
-                    calendarSelect.innerHTML = '<option value="">جميع الشقق</option>' + demoOptions;
-                }
-                
-                if (calendarSelectMobile) {
-                    calendarSelectMobile.innerHTML = '<option value="">جميع الشقق</option>' + demoOptions;
-                }
             }
         }
 
@@ -2359,10 +2305,10 @@
 
         // View apartment bookings
         async function viewApartmentBookings(apartmentId) {
-            // Switch to bookings section and filter by apartment
+            // Switch to bookings section
             showSection('bookings');
             
-            // Get apartment name for display
+            // Get apartment name
             let apartmentName = 'الشقة المحددة';
             try {
                 const { data: apartment } = await supabase
@@ -2381,12 +2327,29 @@
             // Filter bookings by apartment
             await loadBookingsForApartment(apartmentId, apartmentName);
             showMessage(`تم عرض حجوزات ${apartmentName}`, 'info');
+            
+            // Add "Show All Bookings" button
+            const bookingsHeader = document.querySelector('#bookings .card-header h5');
+            if (bookingsHeader && !document.getElementById('showAllBookingsBtn')) {
+                const showAllBtn = document.createElement('button');
+                showAllBtn.id = 'showAllBookingsBtn';
+                showAllBtn.className = 'btn btn-outline-secondary btn-sm ms-2';
+                showAllBtn.innerHTML = '<i class="bi bi-list"></i> جميع الحجوزات';
+                showAllBtn.onclick = showAllBookings;
+                bookingsHeader.parentNode.appendChild(showAllBtn);
+            }
         }
 
-        // Add button to show all bookings again
+        // Show all bookings again
         function showAllBookings() {
             loadBookings();
             showMessage('تم عرض جميع الحجوزات', 'info');
+            
+            // Remove the "Show All Bookings" button
+            const showAllBtn = document.getElementById('showAllBookingsBtn');
+            if (showAllBtn) {
+                showAllBtn.remove();
+            }
         }
 
         // Load bookings for specific apartment
@@ -2412,8 +2375,8 @@
                     id: 'demo1',
                     guest_name: 'أحمد محمد',
                     guest_phone: '0555123456',
-                    check_in_date: '2024-01-15',
-                    check_out_date: '2024-01-18',
+                    start_date: '2024-01-15',
+                    end_date: '2024-01-18',
                     total_price: 10500,
                     status: 'confirmed'
                 },
@@ -2421,8 +2384,8 @@
                     id: 'demo2',
                     guest_name: 'فاطمة علي',
                     guest_phone: '0555987654',
-                    check_in_date: '2024-01-20',
-                    check_out_date: '2024-01-25',
+                    start_date: '2024-01-20',
+                    end_date: '2024-01-25',
                     total_price: 17500,
                     status: 'pending'
                 }
@@ -2436,8 +2399,8 @@
                             <strong>${booking.guest_name}</strong><br>
                             <small class="text-muted">${booking.guest_phone}</small>
                         </td>
-                        <td>${new Date(booking.check_in_date).toLocaleDateString('ar-SA')}</td>
-                        <td>${new Date(booking.check_out_date).toLocaleDateString('ar-SA')}</td>
+                        <td>${new Date(booking.start_date).toLocaleDateString('ar-SA')}</td>
+                        <td>${new Date(booking.end_date).toLocaleDateString('ar-SA')}</td>
                         <td><strong>${booking.total_price.toLocaleString()} د.ج</strong></td>
                         <td>
                             <span class="badge ${getStatusBadgeClass(booking.status)}">
@@ -2748,44 +2711,16 @@
             }
         }
 
-        // Load apartments for bookings - simplified
+        // Load apartments for bookings
         async function loadApartmentsForBookings() {
-            // Use demo data directly for simplicity
-            const demoOptions = `
-                <option value="demo1" data-price="3500">شقة الواحة الفاخرة</option>
-                <option value="demo2" data-price="4200">شقة النخيل العصرية</option>
-                <option value="demo3" data-price="2800">استوديو الزهور المريح</option>
-                <option value="demo4" data-price="3800">شقة الياسمين الهادئة</option>
-            `;
-            
-            const bookingSelect = document.getElementById('bookingApartment');
-            const editBookingSelect = document.getElementById('editBookingApartment');
-            
-            if (bookingSelect) {
-                bookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + demoOptions;
-            }
-            
-            if (editBookingSelect) {
-                editBookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + demoOptions;
-            }
-            
-            // Setup listeners after a short delay
-            setTimeout(() => {
-                setupBookingFormListeners();
-            }, 100);
-        }
-        
-        // Original function kept as backup
-        async function loadApartmentsForBookingsOriginal() {
             try {
                 console.log('Loading apartments for bookings...');
                 console.log('Current user ID:', currentUser?.id || DEMO_USER_ID);
                 
                 const { data: apartments, error } = await supabase
                     .from('apartments')
-                    .select('id, name, price_per_night')
-                    .eq('user_id', currentUser?.id || DEMO_USER_ID)
-                    .order('name');
+                    .select('id, name, daily_price')
+                    .eq('user_id', currentUser?.id || DEMO_USER_ID);
                 
                 if (error) {
                     console.error('Error loading apartments:', error);
@@ -2796,25 +2731,11 @@
                 
                 if (apartments && apartments.length > 0) {
                     const options = apartments.map(apt => 
-                        `<option value="${apt.id}" data-price="${apt.price_per_night || 0}">${apt.name}</option>`
+                        `<option value="${apt.id}" data-price="${apt.daily_price}">${apt.name}</option>`
                     ).join('');
                     
-                    const bookingSelect = document.getElementById('bookingApartment');
-                    const editBookingSelect = document.getElementById('editBookingApartment');
-                    
-                    if (bookingSelect) {
-                        bookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + options;
-                        
-                        // Add event listeners for price calculation
-                        bookingSelect.addEventListener('change', calculateBookingPrice);
-                    }
-                    
-                    if (editBookingSelect) {
-                        editBookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + options;
-                    }
-                    
-                    // Add event listeners for date and price changes
-                    setupBookingFormListeners();
+                    document.getElementById('bookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
+                    document.getElementById('editBookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
                     
                     console.log('Apartments options updated');
                 } else {
@@ -2823,29 +2744,17 @@
                     // Load all apartments as fallback (for demo purposes)
                     const { data: allApartments, error: allError } = await supabase
                         .from('apartments')
-                        .select('id, name, price_per_night')
+                        .select('id, name, daily_price')
                         .limit(10);
                     
                     if (allApartments && allApartments.length > 0) {
                         console.log('Using all apartments as fallback:', allApartments);
                         const options = allApartments.map(apt => 
-                            `<option value="${apt.id}" data-price="${apt.price_per_night || 0}">${apt.name}</option>`
+                            `<option value="${apt.id}" data-price="${apt.daily_price}">${apt.name}</option>`
                         ).join('');
                         
-                        const bookingSelect = document.getElementById('bookingApartment');
-                        const editBookingSelect = document.getElementById('editBookingApartment');
-                        
-                        if (bookingSelect) {
-                            bookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + options;
-                            bookingSelect.addEventListener('change', calculateBookingPrice);
-                        }
-                        
-                        if (editBookingSelect) {
-                            editBookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + options;
-                        }
-                        
-                        // Setup listeners
-                        setupBookingFormListeners();
+                        document.getElementById('bookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
+                        document.getElementById('editBookingApartment').innerHTML = '<option value="">اختر الشقة</option>' + options;
                     } else {
                         document.getElementById('bookingApartment').innerHTML = '<option value="">لا توجد شقق متاحة</option>';
                         document.getElementById('editBookingApartment').innerHTML = '<option value="">لا توجد شقق متاحة</option>';
@@ -2853,40 +2762,19 @@
                 }
             } catch (error) {
                 console.log('Error loading apartments for bookings:', error);
-                
-                // Use demo data when database is not available
-                const demoOptions = `
-                    <option value="demo1" data-price="3500">شقة الواحة الفاخرة</option>
-                    <option value="demo2" data-price="4200">شقة النخيل العصرية</option>
-                    <option value="demo3" data-price="2800">استوديو الزهور المريح</option>
-                    <option value="demo4" data-price="3800">شقة الياسمين الهادئة</option>
-                `;
-                
-                const bookingSelect = document.getElementById('bookingApartment');
-                const editBookingSelect = document.getElementById('editBookingApartment');
-                
-                if (bookingSelect) {
-                    bookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + demoOptions;
-                    bookingSelect.addEventListener('change', calculateBookingPrice);
-                    console.log('✅ تم تحميل الشقق التجريبية للحجز');
-                }
-                
-                if (editBookingSelect) {
-                    editBookingSelect.innerHTML = '<option value="">اختر الشقة</option>' + demoOptions;
-                }
-                
-                // Setup listeners
-                setupBookingFormListeners();
             }
         }
 
-        // Show add booking form - simplified
+        // Show add booking form
         function showAddBookingForm() {
             // Create backdrop
             createBackdrop();
             document.getElementById('addBookingCard').style.display = 'block';
             document.getElementById('editBookingCard').style.display = 'none';
             document.getElementById('addBookingForm').reset();
+            
+            // Load apartments for booking
+            loadApartmentsForBookings();
             
             // Set default dates
             const today = new Date();
@@ -2896,8 +2784,10 @@
             document.getElementById('bookingStartDate').value = today.toISOString().split('T')[0];
             document.getElementById('bookingEndDate').value = tomorrow.toISOString().split('T')[0];
             
-            // Load apartments and setup listeners
-            loadApartmentsForBookings();
+            // Setup event listeners after a short delay
+            setTimeout(() => {
+                setupBookingFormListeners();
+            }, 200);
         }
 
         // Hide add booking form
@@ -2906,7 +2796,7 @@
             removeBackdrop();
         }
 
-        // Calculate booking price - simplified version
+        // Calculate booking price - enhanced version
         function calculateBookingPrice() {
             const apartmentSelect = document.getElementById('bookingApartment');
             const startDateInput = document.getElementById('bookingStartDate');
@@ -2915,7 +2805,7 @@
             const nightsInput = document.getElementById('bookingNights');
             const totalPriceInput = document.getElementById('bookingTotalPrice');
             
-            if (!apartmentSelect || !startDateInput || !endDateInput || !dailyPriceInput || !nightsInput || !totalPriceInput) {
+            if (!apartmentSelect || !startDateInput || !endDateInput || !totalPriceInput) {
                 return;
             }
             
@@ -2925,40 +2815,52 @@
             
             if (startDate && endDate && endDate > startDate) {
                 const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                nightsInput.value = nights;
                 
-                // Set daily price from apartment if not set
-                if (apartmentOption && apartmentOption.dataset.price && !dailyPriceInput.value) {
-                    dailyPriceInput.value = apartmentOption.dataset.price;
+                // Update nights field if exists
+                if (nightsInput) {
+                    nightsInput.value = nights;
+                }
+                
+                // Set daily price from apartment if available and daily price field exists
+                if (apartmentOption && apartmentOption.dataset.price && dailyPriceInput) {
+                    if (!dailyPriceInput.value || parseFloat(dailyPriceInput.value) === 0) {
+                        dailyPriceInput.value = apartmentOption.dataset.price;
+                    }
                 }
                 
                 // Calculate total price
-                const dailyPrice = parseFloat(dailyPriceInput.value) || 0;
+                let dailyPrice = 0;
+                if (dailyPriceInput && dailyPriceInput.value) {
+                    dailyPrice = parseFloat(dailyPriceInput.value) || 0;
+                } else if (apartmentOption && apartmentOption.dataset.price) {
+                    dailyPrice = parseFloat(apartmentOption.dataset.price) || 0;
+                }
+                
                 const totalPrice = dailyPrice * nights;
                 totalPriceInput.value = totalPrice;
                 
-                // Update display
-                updatePriceDisplay(nights, dailyPrice, totalPrice);
+                // Update price breakdown if element exists
+                const priceBreakdown = document.getElementById('priceBreakdown');
+                if (priceBreakdown) {
+                    priceBreakdown.innerHTML = `
+                        <small class="text-info">
+                            <i class="bi bi-calculator"></i> 
+                            ${nights} ليلة × ${dailyPrice.toLocaleString()} د.ج = ${totalPrice.toLocaleString()} د.ج
+                        </small>
+                    `;
+                }
             } else {
-                nightsInput.value = '';
                 totalPriceInput.value = '';
+                if (nightsInput) nightsInput.value = '';
+                
+                const priceBreakdown = document.getElementById('priceBreakdown');
+                if (priceBreakdown) {
+                    priceBreakdown.innerHTML = '';
+                }
             }
         }
-        
-        // Update price display with breakdown
-        function updatePriceDisplay(nights, dailyPrice, totalPrice) {
-            const priceBreakdown = document.getElementById('priceBreakdown');
-            if (priceBreakdown) {
-                priceBreakdown.innerHTML = `
-                    <small class="text-info">
-                        <i class="bi bi-calculator"></i> 
-                        ${nights} ليلة × ${dailyPrice.toLocaleString()} د.ج = ${totalPrice.toLocaleString()} د.ج
-                    </small>
-                `;
-            }
-        }
-        
-        // Setup booking form event listeners - simplified
+
+        // Setup booking form listeners
         function setupBookingFormListeners() {
             const apartmentSelect = document.getElementById('bookingApartment');
             const startDateInput = document.getElementById('bookingStartDate');
@@ -2984,17 +2886,28 @@
             
             if (totalPriceInput) {
                 totalPriceInput.addEventListener('input', function() {
-                    const nights = parseInt(document.getElementById('bookingNights').value) || 0;
+                    const nightsInput = document.getElementById('bookingNights');
+                    const nights = parseInt(nightsInput?.value) || 0;
                     const totalPrice = parseFloat(this.value) || 0;
-                    if (nights > 0 && totalPrice > 0) {
+                    
+                    if (nights > 0 && totalPrice > 0 && dailyPriceInput) {
                         const newDailyPrice = totalPrice / nights;
                         dailyPriceInput.value = newDailyPrice.toFixed(2);
+                        
+                        // Update price breakdown
+                        const priceBreakdown = document.getElementById('priceBreakdown');
+                        if (priceBreakdown) {
+                            priceBreakdown.innerHTML = `
+                                <small class="text-info">
+                                    <i class="bi bi-calculator"></i> 
+                                    ${nights} ليلة × ${newDailyPrice.toLocaleString()} د.ج = ${totalPrice.toLocaleString()} د.ج
+                                </small>
+                            `;
+                        }
                     }
                 });
             }
         }
-        
-
 
         // Add event listeners for price calculation
         document.addEventListener('DOMContentLoaded', () => {
@@ -3039,14 +2952,12 @@
                         guest_name: document.getElementById('bookingGuestName').value,
                         guest_phone: document.getElementById('bookingGuestPhone').value,
                         guest_email: document.getElementById('bookingGuestEmail').value,
-                        check_in_date: document.getElementById('bookingStartDate').value,
-                        check_out_date: document.getElementById('bookingEndDate').value,
-                        daily_price: parseFloat(document.getElementById('bookingDailyPrice').value) || 0,
-                        total_price: parseFloat(document.getElementById('bookingTotalPrice').value) || 0,
-                        nights: parseInt(document.getElementById('bookingNights').value) || 0,
+                        start_date: document.getElementById('bookingStartDate').value,
+                        end_date: document.getElementById('bookingEndDate').value,
+                        total_price: parseFloat(document.getElementById('bookingTotalPrice').value),
                         status: document.getElementById('bookingStatus').value,
                         notes: document.getElementById('bookingNotes').value,
-                        user_id: currentUser?.id || DEMO_USER_ID
+                        created_by: currentUser?.id || DEMO_USER_ID
                     };
 
                     // Validate apartment selection
@@ -3064,14 +2975,8 @@
                     }
                     
                     // Validate dates
-                    if (new Date(formData.check_in_date) >= new Date(formData.check_out_date)) {
+                    if (new Date(formData.start_date) >= new Date(formData.end_date)) {
                         showMessage('تاريخ المغادرة يجب أن يكون بعد تاريخ الوصول', 'error');
-                        return;
-                    }
-                    
-                    // Validate price
-                    if (formData.total_price <= 0) {
-                        showMessage('يرجى إدخال المبلغ الإجمالي', 'error');
                         return;
                     }
 
@@ -3446,27 +3351,6 @@
             }
         }
 
-        // Initialize enhanced features
-        function initializeEnhancedFeatures() {
-            // Load apartments for all filters and selectors
-            loadApartmentsForFilters();
-            
-            // Setup booking form listeners
-            setTimeout(() => {
-                setupBookingFormListeners();
-            }, 500);
-            
-            // Initialize calendar with apartment filtering
-            setTimeout(() => {
-                loadCalendar();
-            }, 1000);
-            
-            console.log('✅ تم تفعيل الميزات المحسنة:');
-            console.log('📋 تصفية الحجوزات حسب الشقة');
-            console.log('📅 تقويم مخصص لكل شقة');
-            console.log('💰 تعديل الأسعار عند الحجز');
-        }
-
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             // Check if user is already logged in
@@ -3475,14 +3359,12 @@
                 showDashboard(session.user);
                 // Try to insert demo data if needed
                 setTimeout(() => insertDemoDataAfterLogin(), 2000);
-                // Initialize enhanced features
-                setTimeout(() => initializeEnhancedFeatures(), 3000);
             }
             
             // Initialize mobile controls sync
             setTimeout(() => syncMobileControls(), 1000);
             
-            console.log('🚀 تطبيق إدارة الشقق المحسن جاهز للعمل!');
+            console.log('تطبيق إدارة الشقق المحسن جاهز للعمل!');
         });
     </script>
 </body>

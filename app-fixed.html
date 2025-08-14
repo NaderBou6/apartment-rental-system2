@@ -43,7 +43,7 @@
     
     <style>
         body {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -97,7 +97,14 @@
         .text-primary {
             color: #667eea !important;
         }
-.user-avatar {
+        
+        .dashboard-section {
+            display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .user-avatar {
     width: 40px;
     height: 40px;
     background-color: #fff;
@@ -125,8 +132,6 @@
     z-index: 2000;
 }
 
-
-        
         .stats-card {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
@@ -624,7 +629,7 @@
     </div>
 
     <!-- Dashboard Section -->
-    <div id="dashboardSection" class="dashboard-section">
+  <div id="dashboardSection" class="dashboard-section">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <div class="container d-flex justify-content-between align-items-center">
             
@@ -653,8 +658,7 @@
         </div>
     </nav>
 
-
-    <div class="container mt-5 pt-4">
+        <div class="container mt-5 pt-4">
             <!-- Navigation Tabs -->
             <ul class="nav nav-tabs mb-4">
                 <li class="nav-item">
@@ -1132,7 +1136,7 @@
                                             <i class="bi bi-chevron-right"></i> السابق
                                         </button>
                                         <button class="btn btn-outline-primary btn-sm" id="currentMonth">
-                                            <i class="bi bi-calendar-today"></i> اليوم
+                                            <i class="bi bi-calendar-today"></i> الشهر
                                         </button>
                                         <button class="btn btn-outline-primary btn-sm" id="nextMonth">
                                             التالي <i class="bi bi-chevron-left"></i>
@@ -1153,8 +1157,7 @@
                                 </div>
                                 <div class="col-12">
                                     
-                                    <label for="calendarMonthPickerMobile" class="form-label">اختر الشهر والسنة</label>
-                                    <input type="month" class="form-control" id="calendarMonthPickerMobile">
+<input type="month" id="calendarMonthPickerMobile" class="d-none" aria-hidden="true">
                                 </div>
                                 <div class="col-12">
                                     <div class="btn-group w-100" role="group">
@@ -1162,7 +1165,7 @@
                                             <i class="bi bi-chevron-right"></i>
                                         </button>
                                         <button class="btn btn-outline-primary" id="currentMonthMobile">
-                                            <i class="bi bi-calendar-today"></i> اليوم
+                                            <i class="bi bi-calendar-today"></i> الشهر
                                         </button>
                                         <button class="btn btn-outline-primary" id="nextMonthMobile">
                                             <i class="bi bi-chevron-left"></i>
@@ -1627,6 +1630,7 @@
             showMessage('تم تسجيل الخروج بنجاح', 'success');
         }
 
+
         // Load dashboard data
         async function loadDashboardData() {
             try {
@@ -1639,6 +1643,28 @@
                 if (!apartmentsError) {
                     document.getElementById('totalApartments').textContent = apartmentsData?.length || 0;
                 }
+
+                // username bienvenu
+              // الحصول على اسم المستخدم من البيانات أو من البريد
+const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+
+function setUserName(fullName) {
+    // عرض الاسم الكامل في القائمة
+    document.getElementById("fullUserName").textContent = fullName;
+    
+    // استخراج الأحرف الأولى
+    let initials = fullName.split(" ")
+        .map(word => word.charAt(0))
+        .join("")
+        .toUpperCase();
+    
+    // عرض الأحرف الأولى في الدائرة
+    document.getElementById("userInitials").textContent = initials;
+}
+
+// عند تسجيل الدخول
+setUserName(userName);
+
 
                 // Load bookings count
                 const { data: bookingsData, error: bookingsError } = await supabase
@@ -1745,21 +1771,7 @@
                 `${monthNames[currentMonth]} ${currentYear}`;
         }
 
-            function setUserName(fullName) {
-        document.getElementById("fullUserName").textContent = fullName;
-        
-        // استخراج الأحرف الأولى
-        let initials = fullName.split(" ")
-            .map(word => word.charAt(0))
-            .join("")
-            .toUpperCase();
-        
-        document.getElementById("userInitials").textContent = initials;
-    }
-
-    // مثال: عند تسجيل الدخول
-    const userName = user.user_metadata?.full_name || user.email.split('@')[0];
-       setUserName(userName); // Load calendar
+        // Load calendar
         async function loadCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             

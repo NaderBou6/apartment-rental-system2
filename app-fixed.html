@@ -98,12 +98,25 @@
             color: #667eea !important;
         }
         
-        .dashboard-section {
-            display: none;
-            padding: 20px;
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    color: #0d6efd;
+    border: none;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+.user-avatar:hover {
+    background-color: #e9ecef;
+}
+
         
         .stats-card {
             background: linear-gradient(45deg, #667eea, #764ba2);
@@ -603,21 +616,32 @@
 
     <!-- Dashboard Section -->
     <div id="dashboardSection" class="dashboard-section">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-            <div class="container">
-                <a class="navbar-brand" href="#">
-                    <i class="bi bi-building"></i>
-                    إدارة الشقق
-                </a>
-                <div class="navbar-nav ms-auto">
-                    <span class="navbar-text me-3" id="userNameNav">مرحباً</span>
-                    <button class="btn btn-outline-light btn-sm" onclick="logout()">
-                        <i class="bi bi-box-arrow-right"></i>
-                        خروج
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-building"></i>
+                إدارة الشقق
+            </a>
+            <div class="navbar-nav ms-auto">
+                <!-- أيقونة المستخدم -->
+                <div class="dropdown">
+                    <button class="user-avatar" id="userAvatarBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- الأحرف الأولى لاسم المستخدم -->
+                        <span id="userInitials">؟</span>
                     </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="dropdown-item-text fw-bold" id="fullUserName">اسم المستخدم</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item text-danger" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> خروج
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
         <div class="container mt-5 pt-4">
             <!-- Navigation Tabs -->
@@ -1117,6 +1141,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12">
+                                    
                                     <label for="calendarMonthPickerMobile" class="form-label">اختر الشهر والسنة</label>
                                     <input type="month" class="form-control" id="calendarMonthPickerMobile">
                                 </div>
@@ -1708,6 +1733,26 @@
             document.getElementById('currentMonthYear').textContent = 
                 `${monthNames[currentMonth]} ${currentYear}`;
         }
+
+            function setUserName(fullName) {
+        document.getElementById("fullUserName").textContent = fullName;
+        
+        // استخراج الأحرف الأولى
+        let initials = fullName.split(" ")
+            .map(word => word.charAt(0))
+            .join("")
+            .toUpperCase();
+        
+        document.getElementById("userInitials").textContent = initials;
+    }
+
+    // مثال: عند تسجيل الدخول
+    setUserName("أحمد محمد علي");
+
+    function logout() {
+        // كود تسجيل الخروج
+        alert("تم تسجيل الخروج");
+    }
 
         // Load calendar
         async function loadCalendar() {

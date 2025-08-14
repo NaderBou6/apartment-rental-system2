@@ -1106,31 +1106,35 @@
 
                         <!-- Calendar Controls for Mobile -->
                    <!-- Calendar Controls for Mobile -->
-<div class="d-md-none mb-4">
-    <div class="row g-3">
-        <div class="col-12">
-            <label for="calendarApartmentMobile" class="form-label">اختر الشقة</label>
-            <select class="form-select" id="calendarApartmentMobile">
-                <option value="">جميع الشقق</option>
-            </select>
-        </div>
-       <input type="month" id="calendarMonthPickerMobile" class="d-none" aria-hidden="true">
-
-        <div class="col-12">
-            <div class="btn-group w-100" role="group">
-
-                <button class="btn btn-outline-primary" id="currentMonthMobile">
-                    <i class="bi bi-calendar-today"></i> الشهر
-                </button>
-                <button class="btn btn-outline-primary" id="nextMonthMobile">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-                        <!-- Current Month Display -->
+ <div class="d-md-none mb-4">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="calendarApartmentMobile" class="form-label">اختر الشقة</label>
+                                    <select class="form-select" id="calendarApartmentMobile">
+                                        <option value="">جميع الشقق</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    
+                                    <label for="calendarMonthPickerMobile" class="form-label">اختر الشهر والسنة</label>
+                                    <input type="month" class="form-control" id="calendarMonthPickerMobile">
+                                </div>
+                                <div class="col-12">
+                                    <div class="btn-group w-100" role="group">
+                                        <button class="btn btn-outline-primary" id="prevMonthMobile">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary" id="currentMonthMobile">
+                                            <i class="bi bi-calendar-today"></i> اليوم
+                                        </button>
+                                        <button class="btn btn-outline-primary" id="nextMonthMobile">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                               <!-- Current Month Display -->
                         <div class="text-center mb-3">
                             <h5 class="text-primary" id="currentMonthYear">ديسمبر 2024</h5>
                         </div>

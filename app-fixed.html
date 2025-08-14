@@ -1758,8 +1758,8 @@
     }
 
     // مثال: عند تسجيل الدخول
-    
-        // Load calendar
+    const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+       setUserName(userName); // Load calendar
         async function loadCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             

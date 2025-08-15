@@ -1645,7 +1645,13 @@
                 }
 
                 // username bienvenu
-              // الحصول على اسم المستخدم من البيانات أو من البريد
+supabase.auth.getUser().then(({ data: { user } }) => {
+    if (user) {
+        const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
+        setUserName(fullName);
+    }
+});
+
 function setUserName(fullName) {
     document.getElementById("fullUserName").textContent = fullName;
 
@@ -1989,10 +1995,7 @@ function setUserName(fullName) {
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 showDashboard(session.user);
-                 if (user) {
-        const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
-        setUserName(fullName);
-    }
+                
             } else if (event === 'SIGNED_OUT') {
                 logout();
             }

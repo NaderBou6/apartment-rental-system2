@@ -1646,31 +1646,18 @@
 
                 // username bienvenu
               // الحصول على اسم المستخدم من البيانات أو من البريد
-const userName = user.user_metadata?.full_name || user.email.split('@')[0];
+function setUserName(fullName) {
+    document.getElementById("fullUserName").textContent = fullName;
 
-document.addEventListener("DOMContentLoaded", function () {
-    // جلب اسم المستخدم أو البريد
-    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "مستخدم";
+    let initials = fullName
+        .split(" ")
+        .filter(word => word.trim() !== "")
+        .map(word => word.charAt(0))
+        .join("")
+        .toUpperCase();
 
-    function setUserName(fullName) {
-        // الاسم الكامل في القائمة
-        document.getElementById("fullUserName").textContent = fullName;
-
-        // استخراج الأحرف الأولى حتى لو كان عربي
-        let initials = fullName
-            .split(" ")
-            .filter(word => word.trim() !== "")
-            .map(word => word.charAt(0))
-            .join("")
-            .toUpperCase();
-
-        // وضع الأحرف الأولى في الدائرة
-        document.getElementById("userInitials").textContent = initials;
-    }
-
-    setUserName(userName);
-});
-
+    document.getElementById("userInitials").textContent = initials;
+}
 
 
                 // Load bookings count
@@ -2002,6 +1989,10 @@ document.addEventListener("DOMContentLoaded", function () {
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 showDashboard(session.user);
+                 if (user) {
+        const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
+        setUserName(fullName);
+    }
             } else if (event === 'SIGNED_OUT') {
                 logout();
             }

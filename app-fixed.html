@@ -1645,25 +1645,7 @@
                 }
 
                 // username bienvenu
-supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user) {
-        const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
-        setUserName(fullName);
-    }
-});
 
-function setUserName(fullName) {
-    document.getElementById("fullUserName").textContent = fullName;
-
-    let initials = fullName
-        .split(" ")
-        .filter(word => word.trim() !== "")
-        .map(word => word.charAt(0))
-        .join("")
-        .toUpperCase();
-
-    document.getElementById("userInitials").textContent = initials;
-}
 
 
                 // Load bookings count
@@ -1992,14 +1974,39 @@ function setUserName(fullName) {
         }
 
         // Check authentication state
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                showDashboard(session.user);
-                
-            } else if (event === 'SIGNED_OUT') {
-                logout();
-            }
-        });
+       // Check authentication state
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+        // عرض الداشبورد
+        showDashboard(session.user);
+
+        // جلب الاسم الكامل أو من البريد
+        const fullName = session.user.user_metadata?.full_name 
+            || session.user.email.split('@')[0] 
+            || "مستخدم";
+
+        // عرض الأحرف الأولى والاسم
+        setUserName(fullName);
+
+    } else if (event === 'SIGNED_OUT') {
+        logout();
+    }
+});
+
+// دالة عرض الأحرف الأولى
+function setUserName(fullName) {
+    document.getElementById("fullUserName").textContent = fullName;
+
+    let initials = fullName
+        .split(" ")
+        .filter(word => word.trim() !== "")
+        .map(word => word.charAt(0))
+        .join("")
+        .toUpperCase();
+
+    document.getElementById("userInitials").textContent = initials;
+}
+
 
         // Load apartments for filters
         async function loadApartmentsForFilters() {

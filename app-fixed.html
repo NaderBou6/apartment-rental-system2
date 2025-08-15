@@ -1648,22 +1648,29 @@
               // الحصول على اسم المستخدم من البيانات أو من البريد
 const userName = user.user_metadata?.full_name || user.email.split('@')[0];
 
-function setUserName(fullName) {
-    // عرض الاسم الكامل في القائمة
-    document.getElementById("fullUserName").textContent = fullName;
-    
-    // استخراج الأحرف الأولى
-    let initials = fullName.split(" ")
-        .map(word => word.charAt(0))
-        .join("")
-        .toUpperCase();
-    
-    // عرض الأحرف الأولى في الدائرة
-    document.getElementById("userInitials").textContent = initials;
-}
+document.addEventListener("DOMContentLoaded", function () {
+    // جلب اسم المستخدم أو البريد
+    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "مستخدم";
 
-// عند تسجيل الدخول
-setUserName(userName);
+    function setUserName(fullName) {
+        // الاسم الكامل في القائمة
+        document.getElementById("fullUserName").textContent = fullName;
+
+        // استخراج الأحرف الأولى حتى لو كان عربي
+        let initials = fullName
+            .split(" ")
+            .filter(word => word.trim() !== "")
+            .map(word => word.charAt(0))
+            .join("")
+            .toUpperCase();
+
+        // وضع الأحرف الأولى في الدائرة
+        document.getElementById("userInitials").textContent = initials;
+    }
+
+    setUserName(userName);
+});
+
 
 
                 // Load bookings count
